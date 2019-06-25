@@ -10,7 +10,7 @@ plugins {
     id("org.jetbrains.dokka")
     id("java-gradle-plugin")
     id("maven-publish")
-    //id("maven")
+    id("maven")
     id("com.jfrog.bintray")
 }
 
@@ -84,12 +84,13 @@ bintray {
         vcsUrl = "https://github.com/eManPrague/swagger-codegen"
         description = "A fork of the swagger-codegen by eMan"
         setLabels(
-            "kotlin",
-            "swagger",
-            "codegen",
-            "retrofit",
-            "room",
-            "swagger-codegen"
+                "kotlin",
+                "swagger",
+                "codegen",
+                "retrofit",
+                "room",
+                "swagger-codegen",
+                "openapi"
         )
         setLicenses("MIT")
         desc = description
@@ -98,7 +99,7 @@ bintray {
 
 publishing {
     publications {
-        register("mavenJava", MavenPublication::class) {
+        register("production", MavenPublication::class) {
             artifactId = Artifact.artifactId
             from(components["java"])
             artifact(tasks["sourcesJar"])
