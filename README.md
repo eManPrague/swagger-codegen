@@ -59,3 +59,10 @@ swagger {
     - `modelNameSuffix` - By this property you can define suffix to all model classes. E.g. `UserDto`, ...
     - `apiPackage` - By this property you can define a package name for your service classes
     - `modelPackage` - By this property you can define a package name for your model classes
+
+If your OpenApi contains some specific objects for parsing JSON, .... You need add the Moshi dependencies
+
+```kotlin
+implementation("com.squareup.moshi:moshi-kotlin:1.5.0")
+implementation("com.squareup.moshi:moshi-adapters:1.5.0")
+```
