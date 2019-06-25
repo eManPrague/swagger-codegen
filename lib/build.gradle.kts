@@ -8,6 +8,7 @@ plugins {
     id("java-library")
     kotlin("jvm")
     id("org.jetbrains.dokka")
+    id("java-gradle-plugin")
     id("maven-publish")
     //id("maven")
     id("com.jfrog.bintray")
@@ -53,15 +54,15 @@ tasks.create<Jar>("dokkaHtmlJar") {
     dependsOn(dokka)
 }
 
-/*gradlePlugin {
+gradlePlugin {
     plugins {
-        swaggerCodeGenPlugin {
-            id = "swagger-codegen-eman"
+        register("swagger-codegen-plugin") {
+            id = "swagger-codegen"
             //id = 'cz.eman.openapi.gen'
             implementationClass = "cz.eman.swagger.codegen.SwaggerCodeGenPlugin"
         }
     }
-}*/
+}
 
 group = Artifact.groupId
 version = "${project.version}"

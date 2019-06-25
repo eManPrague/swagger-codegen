@@ -9,10 +9,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
 
-/**
- * @author eMan (vaclav.souhrada@eman.cz
- */
-@Deprecated("We are using again an original DefaultCodegenConfig from the Swagger codegen library")
 abstract class AbstractKotlinCodegen : DefaultCodegenConfig(), CodegenConfig {
 
     protected var mArtifactId: String = ""
@@ -387,15 +383,15 @@ abstract class AbstractKotlinCodegen : DefaultCodegenConfig(), CodegenConfig {
                 modified = value
             CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.camelCase ->
                 // NOTE: Removes hyphens and underscores
-                modified = DefaultCodegenConfig.camelize(modified, true)
+                modified = camelize(modified, true)
             CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.PascalCase -> {
                 // NOTE: Removes hyphens and underscores
-                val result = DefaultCodegenConfig.camelize(modified)
+                val result = camelize(modified)
                 modified = titleCase(result)
             }
             CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.snake_case ->
                 // NOTE: Removes hyphens
-                modified = DefaultCodegenConfig.underscore(modified)
+                modified = underscore(modified)
             CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.UPPERCASE -> modified = modified.toUpperCase()
         }
 
@@ -448,7 +444,7 @@ abstract class AbstractKotlinCodegen : DefaultCodegenConfig(), CodegenConfig {
         modifiedName = sanitizeKotlinSpecificNames(modifiedName)
 
         // Camelize name of nested properties
-        modifiedName = DefaultCodegenConfig.camelize(modifiedName)
+        modifiedName = camelize(modifiedName)
 
         if (reservedWords.contains(modifiedName)) {
             modifiedName = escapeReservedWord(modifiedName)

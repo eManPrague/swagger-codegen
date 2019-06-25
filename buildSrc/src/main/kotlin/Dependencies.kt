@@ -2,7 +2,7 @@ import org.gradle.api.JavaVersion
 import kotlin.String
 
 
-/* =============================  BUILD-PLUGINS ======================= */
+/* =============================  VERSIONS ======================= */
 
 private object Versions {
 
@@ -39,7 +39,7 @@ object GradlePlugins {
     val bintrayGradle = "com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.bintrayGradle}"
 }
 
-/* =============================  ANDROID ============================= */
+/* =============================  ARTIFACTS ============================= */
 
 object Artifact {
     val groupId = "cz.eman.swagger"

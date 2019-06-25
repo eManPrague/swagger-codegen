@@ -1,4 +1,4 @@
-package cz.eman.swagger.codegen.gradle
+package cz.eman.swagger.codegen
 
 import io.swagger.codegen.v3.DefaultGenerator
 import io.swagger.codegen.v3.config.CodegenConfigurator
@@ -9,7 +9,8 @@ import org.gradle.api.tasks.TaskAction
 import java.io.File
 
 /**
- * eMan s.r.o.
+ * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
+ * @since 1.0.0
  */
 abstract class AbstractSwaggerGenTask : DefaultTask() {
     init {

@@ -6,6 +6,7 @@ import cz.eman.gradle.swagger.languages.AbsJavaCodegen
  * TODO CLASS_DESCRIPTION
  *
  * @author david.sucharda (david.sucharda@eman.cz)
+ * @since 1.0.0
  */
 class JavaRetrofitCodegen : AbsJavaCodegen() {
 

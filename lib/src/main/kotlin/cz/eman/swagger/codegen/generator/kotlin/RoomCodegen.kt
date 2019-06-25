@@ -10,7 +10,8 @@ import java.util.*
 
 
 /**
- * eMan s.r.o.
+ * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
+ * @since 1.0.0
  */
 open class RoomCodegen() : AbstractKotlinCodegen() {
 

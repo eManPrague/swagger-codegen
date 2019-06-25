@@ -1,7 +1,5 @@
 package cz.eman.swagger.codegen.generator.kotlin
 
-import cz.eman.swagger.codegen.language.CLASS_API_SUFFIX
-import cz.eman.swagger.codegen.language.DATE_LIBRARY
 import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API
 import cz.eman.swagger.codegen.language.INFRASTRUCTURE_CLI
 import io.swagger.codegen.v3.CliOption
@@ -14,12 +12,15 @@ import java.io.File
 import kotlin.collections.HashMap
 
 /**
- * @authoreMan s.r.o (vaclav.souhrada@eman.cz)
- * @see[AbstractKotlinCodegen]
+ * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  */
 open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
 
-    private var logger = LoggerFactory.getLogger(KotlinRetrofitCodegen::class.java)
+    val DATE_LIBRARY = "dateLibrary"
+
+    val CLASS_API_SUFFIX = "Service"
+
+    var LOGGER = LoggerFactory.getLogger(KotlinRetrofitCodegen::class.java)
 
     protected var dateLib = DateLibrary.JAVA8.value
 

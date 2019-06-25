@@ -1,11 +1,11 @@
-package cz.eman.swagger.codegen.gradle
+package cz.eman.swagger.codegen
 
 import io.swagger.codegen.v3.config.CodegenConfigurator
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 /**
- * eMan s.r.o.
+ * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  */
 open class SwaggerCodeGenPlugin : Plugin<Project> {
     companion object TaskNames {

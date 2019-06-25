@@ -20,6 +20,7 @@ import java.util.*
  * TODO CLASS_DESCRIPTION
  *
  * @author david.sucharda (david.sucharda@eman.cz)
+ * @since 1.0.0
  */
 abstract class AbsJavaCodegen : JavaClientCodegen() {
 
