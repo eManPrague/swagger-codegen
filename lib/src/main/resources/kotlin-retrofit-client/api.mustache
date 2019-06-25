@@ -1,0 +1,35 @@
+{{>licenseInfo}}
+package {{apiPackage}}
+
+{{#imports}}import {{import}}
+{{/imports}}
+
+{{#generateInfrastructure}}
+import {{packageName}}.infrastructure.*
+{{/generateInfrastructure}}
+import retrofit2.http.*
+import retrofit2.Call
+
+
+{{#threetenbp}}
+    import org.threeten.bp.LocalDateTime
+{{/threetenbp}}
+
+
+{{#operations}}
+    interface {{classname}} {
+
+    {{#operation}}
+
+        /**
+        * {{summary}}
+        * {{notes}}
+        {{#allParams}}* @param {{paramName}} {{description}} {{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+        {{/allParams}}* @return {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
+        */
+        @{{httpMethod}}("{{path}}")
+        fun {{operationId}} ({{#allParams}}{{#isHeaderParam}}@Header("{{baseName}}"){{/isHeaderParam}} {{#isQueryParam}}@Query("{{baseName}}"){{/isQueryParam}}{{#isPathParam}}@Path("{{baseName}}"){{/isPathParam}}{{#isBodyParam}}@Body{{/isBodyParam}} {{paramName}}: {{{dataType}}}{{#hasMore}}, {{/hasMore}}{{/allParams}} ) : Call
+        <{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Unit{{/returnType}}>
+    {{/operation}}
+        }
+{{/operations}}

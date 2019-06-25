@@ -1,0 +1,16 @@
+{{>licenseInfo~}}
+
+package {{package}};
+
+{{getModelImports}}
+{{~#if gson}}
+import com.google.gson.annotations.Expose;
+{{/if~}}
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+
+{{#models~}}
+{{~#model~}}
+{{#is this 'enum'}}{{>modelEnum}}{{/is}}{{#isNot this 'enum'}}{{>pojo}}{{/isNot}}
+{{/model~}}
+{{/models~}}
