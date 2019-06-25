@@ -1,19 +1,28 @@
 # Swagger / OpenApi 3 Codegen
+
+[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=1.0.0) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/1.0.0/link)
+
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/swagger-api/swagger-codegen with modifications
 
 ### How to use it?
 
 ### Gradle
 
-####1. Add codegen dependency
+#### 1. Add jCenter and codegen dependency
 ```kotlin
-// Kotlin Gradle DSL
-dependencies {
-    classpath("cz.eman.swagger:swagger-codegen:1.0.0")
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    // Kotlin Gradle DSL
+    dependencies {
+        classpath("cz.eman.swagger:swagger-codegen:1.0.0")
+    }
 }
 ```
 
-####2. Apply plugin in your artifact's module
+#### 2. Apply plugin in your artifact's module
 
 ```Kotlin
 plugins {
@@ -21,9 +30,9 @@ plugins {
 }
 ```
 
-####3. Configure Swagger Codegen plugin
+#### 3. Configure Swagger Codegen plugin
 
-#####3.1 Retrofit - Kotlin
+##### 3.1 Retrofit - Kotlin
 ```Kotlin
 swagger {
     inputSpecURL = "${project.projectDir.absolutePath}/data/api.yaml"
