@@ -4,11 +4,11 @@ package {{modelPackage}}
 {{#imports}}import {{import}}
 {{/imports}}
 {{#threetenbp}}
-    import org.threeten.bp.LocalDateTime
+import org.threeten.bp.LocalDateTime
 {{/threetenbp}}
 
 {{#models}}
-    {{#model}}
-        {{#isEnum}}{{>enum_class}}{{/isEnum}}{{^parent}}{{^isEnum}}{{#isAlias}}typealias {{classname}} = {{dataType}}{{/isAlias}}{{^isAlias}}{{>data_class}}{{/isAlias}}{{/isEnum}}{{/parent}}{{#parent}}class {{classname}} : ArrayList<{{{arrayModelType}}}>() {}{{/parent}}
-    {{/model}}
+{{#model}}
+{{#isEnum}}{{>enum_class}}{{/isEnum}}{{^parent}}{{^isEnum}}{{#isAlias}}typealias {{classname}} = {{dataType}}{{/isAlias}}{{^isAlias}}{{>data_class}}{{/isAlias}}{{/isEnum}}{{/parent}}{{#parent}}class {{classname}} : ArrayList<{{{arrayModelType}}}>() {}{{/parent}}
+{{/model}}
 {{/models}}
