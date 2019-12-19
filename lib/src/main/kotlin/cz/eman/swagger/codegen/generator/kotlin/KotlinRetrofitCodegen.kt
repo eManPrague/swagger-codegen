@@ -171,15 +171,58 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
         }
 
         if (generateInfrastructure) {
-            val infrastructureFolder = (sourceFolder + File.separator + packageName + File.separator + "infrastructure").replace(".", "/")
+            val infrastructureFolder =
+                (sourceFolder + File.separator + packageName + File.separator + "infrastructure").replace(".", "/")
             //supportingFiles.add(SupportingFile("infrastructure/ApiClient.kt.mustache", infrastructureFolder, "ApiClient.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApiAbstractions.kt.mustache", infrastructureFolder, "ApiAbstractions.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApiInfrastructureResponse.kt.mustache", infrastructureFolder, "ApiInfrastructureResponse.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApplicationDelegates.kt.mustache", infrastructureFolder, "ApplicationDelegates.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/RequestConfig.kt.mustache", infrastructureFolder, "RequestConfig.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/RequestMethod.kt.mustache", infrastructureFolder, "RequestMethod.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ResponseExtensions.kt.mustache", infrastructureFolder, "ResponseExtensions.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/Serializer.kt.mustache", infrastructureFolder, "Serializer.kt"))
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ApiAbstractions.kt.mustache",
+                    infrastructureFolder,
+                    "ApiAbstractions.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ApiInfrastructureResponse.kt.mustache",
+                    infrastructureFolder,
+                    "ApiInfrastructureResponse.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ApplicationDelegates.kt.mustache",
+                    infrastructureFolder,
+                    "ApplicationDelegates.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/RequestConfig.kt.mustache",
+                    infrastructureFolder,
+                    "RequestConfig.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/RequestMethod.kt.mustache",
+                    infrastructureFolder,
+                    "RequestMethod.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ResponseExtensions.kt.mustache",
+                    infrastructureFolder,
+                    "ResponseExtensions.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/Serializer.kt.mustache",
+                    infrastructureFolder,
+                    "Serializer.kt"
+                )
+            )
             supportingFiles.add(SupportingFile("infrastructure/Errors.kt.mustache", infrastructureFolder, "Errors.kt"))
         }
 
@@ -194,11 +237,11 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
         }
     }
 
-//    override fun fromModel(name: String?, schema: Schema<*>?, allDefinitions: MutableMap<String, Schema<Any>>?): CodegenModel {
-//        fixSchemaType(schema)
-//        fixEmptyType(schema)
-//        return super.fromModel(name, schema, allDefinitions)
-//    }
+    override fun fromModel(name: String?, schema: Schema<*>?): CodegenModel {
+        fixSchemaType(schema)
+        fixEmptyType(schema)
+        return super.fromModel(name, schema)
+    }
 
 //    /**
 //     * Kotlin data classes cannot be without value. This functions adds ignore value to the class
