@@ -2,33 +2,33 @@ package cz.eman.swagger.codegen.generator.kotlin
 
 import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API
 import cz.eman.swagger.codegen.language.INFRASTRUCTURE_CLI
-import io.swagger.codegen.v3.CliOption
-import io.swagger.codegen.v3.CodegenConstants
-import io.swagger.codegen.v3.CodegenType
-import io.swagger.codegen.v3.SupportingFile
-import io.swagger.codegen.v3.generators.kotlin.AbstractKotlinCodegen
+import org.openapitools.codegen.CliOption
+import org.openapitools.codegen.CodegenConstants
+import org.openapitools.codegen.CodegenType
+import org.openapitools.codegen.SupportingFile
+import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import org.openapitools.codegen.languages.KotlinClientCodegen
 import org.slf4j.LoggerFactory
 import java.io.File
-import kotlin.collections.HashMap
 
 /**
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  */
-open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
+open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
 
-    val DATE_LIBRARY = "dateLibrary"
-
-    val CLASS_API_SUFFIX = "Service"
-
-    var LOGGER = LoggerFactory.getLogger(KotlinRetrofitCodegen::class.java)
-
-    protected var dateLib = DateLibrary.JAVA8.value
+    private val LOGGER = LoggerFactory.getLogger(KotlinRetrofitCodegen::class.java)
+    private var collectionType = CollectionType.ARRAY.value
+    private var dateLib = DateLibrary.JAVA8.value
 
     enum class DateLibrary private constructor(val value: String) {
         STRING("string"),
         THREETENBP("threetenbp"),
         JAVA8("java8"),
         MILLIS("millis")
+    }
+
+    enum class CollectionType(val value: String) {
+        ARRAY("array"), LIST("list");
     }
 
     enum class GenerateApiType private constructor(val value: String) {
@@ -45,7 +45,6 @@ open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
      * Constructs an instance of `KotlinClientCodegen`.
      */
     init {
-
         enumPropertyNaming = CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.camelCase
 
         artifactId = "kotlin-retrofit-client"
@@ -61,8 +60,8 @@ open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
         apiDocTemplateFiles["api_doc.mustache"] = ".md"
         templateDir = "kotlin-retrofit-client"
         embeddedTemplateDir = templateDir
-        apiPackage = packageName + ".api"
-        modelPackage = packageName + ".model"
+        apiPackage = "$packageName.api"
+        modelPackage = "$packageName.model"
 
         val dateLibrary = CliOption(DATE_LIBRARY, "Option. Date library to use")
         val dateOptions = HashMap<String, String>()
@@ -79,10 +78,18 @@ open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
         infraOptions[GenerateApiType.API.value] = "Generate API"
         infrastructureCli.enum = infraOptions
         cliOptions.add(infrastructureCli)
+
+        val collectionType = CliOption(KotlinClientCodegen.COLLECTION_TYPE, "Option. Collection type to use")
+        val collectionOptions: MutableMap<String, String> = java.util.HashMap()
+        collectionOptions[KotlinClientCodegen.CollectionType.ARRAY.value] = "kotlin.Array"
+        collectionOptions[KotlinClientCodegen.CollectionType.LIST.value] = "kotlin.collections.List"
+        collectionType.enum = collectionOptions
+        collectionType.default = this.collectionType
+        cliOptions.add(collectionType)
     }
 
     override fun getTag(): CodegenType {
-        return CodegenType.OTHER
+        return CodegenType.CLIENT
     }
 
     override fun getName(): String {
@@ -90,11 +97,7 @@ open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
     }
 
     override fun getHelp(): String {
-        return "Generates a kotlin room classes."
-    }
-
-    override fun getDefaultTemplateDir(): String {
-        return "Kotlin"
+        return "Generates a Kotlin Retrofit2 classes."
     }
 
     override fun toModelFilename(name: String): String {
@@ -110,8 +113,12 @@ open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
         }
     }
 
-    fun setDateLibrary(library: String) {
+    private fun setDateLibrary(library: String) {
         this.dateLib = library
+    }
+
+    private fun setCollectionType(collectionType: String?) {
+        this.collectionType = collectionType!!
     }
 
     override fun toApiName(name: String?): String {
@@ -125,29 +132,32 @@ open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
             setDateLibrary(additionalProperties[DATE_LIBRARY].toString())
         }
 
-        if (DateLibrary.THREETENBP.value == dateLib) {
-            additionalProperties[DateLibrary.THREETENBP.value] = true
-            typeMapping["date"] = "LocalDate"
-            typeMapping["DateTime"] = "LocalDateTime"
-            importMapping["LocalDate"] = "org.threeten.bp.LocalDate"
-            importMapping["LocalDateTime"] = "org.threeten.bp.LocalDateTime"
-            defaultIncludes.add("org.threeten.bp.LocalDateTime")
-        } else if (DateLibrary.STRING.value == dateLib) {
-            typeMapping["date-time"] = "kotlin.String"
-            typeMapping["date"] = "kotlin.String"
-            typeMapping["Date"] = "kotlin.String"
-            typeMapping["DateTime"] = "kotlin.String"
-        } else if (DateLibrary.JAVA8.value == dateLib) {
-            additionalProperties[DateLibrary.JAVA8.value] = true
-        } else if (DateLibrary.MILLIS.value == dateLib) {
-            typeMapping["date-time"] = "kotlin.Long"
-            typeMapping["date"] = "kotlin.String"
-            typeMapping["Date"] = "kotlin.String"
-            typeMapping["DateTime"] = "kotlin.Long"
+        when {
+            DateLibrary.THREETENBP.value == dateLib -> {
+                additionalProperties[DateLibrary.THREETENBP.value] = true
+                typeMapping["date"] = "LocalDate"
+                typeMapping["DateTime"] = "LocalDateTime"
+                importMapping["LocalDate"] = "org.threeten.bp.LocalDate"
+                importMapping["LocalDateTime"] = "org.threeten.bp.LocalDateTime"
+                defaultIncludes.add("org.threeten.bp.LocalDateTime")
+            }
+            DateLibrary.STRING.value == dateLib -> {
+                typeMapping["date-time"] = "kotlin.String"
+                typeMapping["date"] = "kotlin.String"
+                typeMapping["Date"] = "kotlin.String"
+                typeMapping["DateTime"] = "kotlin.String"
+            }
+            DateLibrary.JAVA8.value == dateLib ->
+                additionalProperties[DateLibrary.JAVA8.value] = true
+            DateLibrary.MILLIS.value == dateLib -> {
+                typeMapping["date-time"] = "kotlin.Long"
+                typeMapping["date"] = "kotlin.String"
+                typeMapping["Date"] = "kotlin.String"
+                typeMapping["DateTime"] = "kotlin.Long"
+            }
         }
 
         supportingFiles.add(SupportingFile("README.mustache", "", "README.md"))
-
         supportingFiles.add(SupportingFile("build.gradle.mustache", "", "build.gradle"))
         supportingFiles.add(SupportingFile("settings.gradle.mustache", "", "settings.gradle"))
 
@@ -168,6 +178,21 @@ open class KotlinRetrofitCodegen() : AbstractKotlinCodegen() {
             supportingFiles.add(SupportingFile("infrastructure/Serializer.kt.mustache", infrastructureFolder, "Serializer.kt"))
             supportingFiles.add(SupportingFile("infrastructure/Errors.kt.mustache", infrastructureFolder, "Errors.kt"))
         }
+
+        if (additionalProperties.containsKey(KotlinClientCodegen.COLLECTION_TYPE)) {
+            setCollectionType(additionalProperties[KotlinClientCodegen.COLLECTION_TYPE].toString())
+        }
+
+        if (KotlinClientCodegen.CollectionType.LIST.value == collectionType) {
+            typeMapping["array"] = "kotlin.collections.List"
+            typeMapping["list"] = "kotlin.collections.List"
+            additionalProperties["isList"] = true
+        }
+    }
+
+    companion object {
+        const val DATE_LIBRARY = "dateLibrary"
+        const val CLASS_API_SUFFIX = "Service"
     }
 
 }

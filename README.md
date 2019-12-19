@@ -35,9 +35,11 @@ plugins {
 ##### 3.1 Retrofit - Kotlin
 ```Kotlin
 swagger {
-    inputSpecURL = "${project.projectDir.absolutePath}/data/api.yaml"
-    outputDir = "${project.buildDir.absolutePath}/swagger"
-    lang = "cz.eman.swagger.codegen.generator.kotlin.KotlinRetrofitCodegen"
+    setInputSpec("${project.projectDir.absolutePath}/data/api.yaml")
+    setOutputDir("${project.buildDir.absolutePath}/swagger")
+    setGeneratorName("cz.eman.swagger.codegen.generator.kotlin.KotlinRetrofitCodegen")
+
+    val additionalProperties = HashMap<String, Any>()
     additionalProperties["templateEngine"] = "mustache"
     additionalProperties["dateLibrary"] = "millis"
     additionalProperties["enumPropertyNaming"] = "UPPERCASE"
@@ -45,12 +47,13 @@ swagger {
     additionalProperties["generateInfrastructure"] = false
     additionalProperties["apiPackage"] = "cz.mypackage.service"
     additionalProperties["modelPackage"] = "cz.mypackage.model"
+    setAdditionalProperties(additionalProperties)
 }
 
 ```
-- `inputSpecURL` -
+- `inputSpec` - specify OpenAPI yaml file
 - `outputDir` - specify output directory
-- `lang` -
+- `generatorName` - name or class of supported generator
 - AdditionalProperties:
     - `templateEngine` - Currently this generator is supporting only `mustache`. Support of `handlebars` is in a progress. 
     - `dateLibrary` - 

@@ -15,19 +15,19 @@ plugins {
 }
 
 dependencies {
-    //implementation(fileTree(dir: "libs", include: ["*.jar"]))
+//    implementation(fileTree(args = *arrayOf(Pair("dir", "libs"), Pair("include", arrayOf("*.jar")))))
     implementation(gradleApi())
 
     // Kotlin
     implementation(Dependencies.Kotlin.kotlinStbLib)
 
-    // Swagger
-    implementation(Dependencies.Libs.swaggerCodegen)
-    implementation(Dependencies.Libs.swaggerGenerators)
+    // OpenAPI
+    implementation(Dependencies.Libs.openApiCodegen)
 
     // Tests
     testImplementation(Dependencies.TestLibs.junit)
     testImplementation(Dependencies.TestLibs.kotlinTest)
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<KotlinCompile> {
@@ -37,19 +37,20 @@ tasks.withType<KotlinCompile> {
 }
 
 val dokka by tasks.getting(DokkaTask::class) {
-    moduleName = "lib"
     outputFormat = "html" // html, md, javadoc,
     outputDirectory = "$buildDir/dokka/html"
-    sourceDirs = files("src/main/kotlin")
+    configuration {
+        moduleName = "lib"
+    }
 }
 
 tasks.create<Jar>("sourcesJar") {
     from(files("src/main/kotlin"))
-    classifier = "sources"
+    archiveClassifier.set("sources")
 }
 
 tasks.create<Jar>("dokkaHtmlJar") {
-    classifier = "kdoc-html"
+    archiveClassifier.set("kdoc-html")
     from("$buildDir/dokka/html")
     dependsOn(dokka)
 }
@@ -58,7 +59,6 @@ gradlePlugin {
     plugins {
         register("swagger-codegen-plugin") {
             id = "swagger-codegen"
-            //id = 'cz.eman.openapi.gen'
             implementationClass = "cz.eman.swagger.codegen.SwaggerCodeGenPlugin"
         }
     }
@@ -113,3 +113,6 @@ publishing {
     }
 }
 
+repositories {
+    mavenCentral()
+}
