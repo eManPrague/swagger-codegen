@@ -2,30 +2,35 @@ package cz.eman.swagger.codegen.generator.kotlin
 
 import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API
 import cz.eman.swagger.codegen.language.INFRASTRUCTURE_CLI
-import org.openapitools.codegen.languages.AbstractKotlinCodegen
-import org.openapitools.codegen.languages.KotlinClientCodegen
-import org.slf4j.LoggerFactory
 import io.swagger.v3.oas.models.media.*
 import io.swagger.v3.parser.util.SchemaTypeUtil
+import org.gradle.internal.impldep.com.esotericsoftware.minlog.Log
 import org.openapitools.codegen.*
+import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import org.openapitools.codegen.languages.KotlinClientCodegen
 import java.io.File
+import java.util.stream.Stream
 
 /**
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  */
 open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
 
-    private val LOGGER = LoggerFactory.getLogger(KotlinRetrofitCodegen::class.java)
     private var collectionType = CollectionType.ARRAY.value
     private var dateLib = DateLibrary.JAVA8.value
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
     companion object {
+        const val RETROFIT2 = "retrofit2"
+
         const val DATE_LIBRARY = "dateLibrary"
         const val CLASS_API_SUFFIX = "Service"
+        const val COLLECTION_TYPE = "collectionType"
+
+        const val VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal"
     }
 
-    enum class DateLibrary private constructor(val value: String) {
+    enum class DateLibrary constructor(val value: String) {
         STRING("string"),
         THREETENBP("threetenbp"),
         JAVA8("java8"),
@@ -36,65 +41,29 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
         ARRAY("array"), LIST("list");
     }
 
-    enum class GenerateApiType private constructor(val value: String) {
+    enum class GenerateApiType constructor(val value: String) {
         INFRASTRUCTURE("infrastructure"),
         API("api")
     }
 
-    enum class DtoSuffix private constructor(val value: String) {
+    enum class DtoSuffix constructor(val value: String) {
         DTO("dto"),
         DEFAULT("default")
     }
 
     /**
-     * Constructs an instance of `KotlinClientCodegen`.
+     * Constructs an instance of `KotlinRetrofitCodegen`.
      */
     init {
         enumPropertyNaming = CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.camelCase
-
-        artifactId = "kotlin-retrofit-client"
-        packageName = "cz.eman.swagger"
-
-        outputFolder = "generated-code" + File.separator + "kotlin-retrofit-client"
-        modelTemplateFiles["model.mustache"] = ".kt"
-        apiTemplateFiles["api.mustache"] = ".kt"
-        //apiTemplateFiles["!edited_api.mustache"] = ".kt"
-        // TODO parameter if use api with header param or not
-        //apiTemplateFiles["api_without_header.mustache"] = ".kt"
-        modelDocTemplateFiles["model_doc.mustache"] = ".md"
-        apiDocTemplateFiles["api_doc.mustache"] = ".md"
-        templateDir = "kotlin-retrofit-client"
-        embeddedTemplateDir = templateDir
-        apiPackage = "$packageName.api"
-        modelPackage = "$packageName.model"
-
-        val dateLibrary = CliOption(DATE_LIBRARY, "Option. Date library to use")
-        val dateOptions = HashMap<String, String>()
-        dateOptions[DateLibrary.THREETENBP.value] = "Threetenbp"
-        dateOptions[DateLibrary.STRING.value] = "String"
-        dateOptions[DateLibrary.JAVA8.value] = "Java 8 native JSR310"
-        dateOptions[DateLibrary.MILLIS.value] = "Date Time as Long"
-        dateLibrary.enum = dateOptions
-        cliOptions.add(dateLibrary)
-
-        val infrastructureCli = CliOption(INFRASTRUCTURE_CLI, "Option to add infrastructure package")
-        val infraOptions = HashMap<String, String>()
-        infraOptions[GenerateApiType.INFRASTRUCTURE.value] = "Generate Infrastructure API"
-        infraOptions[GenerateApiType.API.value] = "Generate API"
-        infrastructureCli.enum = infraOptions
-        cliOptions.add(infrastructureCli)
-
-        val collectionType = CliOption(KotlinClientCodegen.COLLECTION_TYPE, "Option. Collection type to use")
-        val collectionOptions: MutableMap<String, String> = java.util.HashMap()
-        collectionOptions[KotlinClientCodegen.CollectionType.ARRAY.value] = "kotlin.Array"
-        collectionOptions[KotlinClientCodegen.CollectionType.LIST.value] = "kotlin.collections.List"
-        collectionType.enum = collectionOptions
-        collectionType.default = this.collectionType
-        cliOptions.add(collectionType)
+        initArtifact()
+        initTemplates()
+        initSettings()
+        initLibraries()
     }
 
     override fun getTag(): CodegenType {
-        return CodegenType.CLIENT
+        return CodegenType.OTHER
     }
 
     override fun getName(): String {
@@ -116,14 +85,6 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
         } else {
             "$modelNamePrefix$modelName$modelNameSuffix"
         }
-    }
-
-    private fun setDateLibrary(library: String) {
-        this.dateLib = library
-    }
-
-    private fun setCollectionType(collectionType: String?) {
-        this.collectionType = collectionType!!
     }
 
     override fun toApiName(name: String?): String {
@@ -226,11 +187,11 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
             supportingFiles.add(SupportingFile("infrastructure/Errors.kt.mustache", infrastructureFolder, "Errors.kt"))
         }
 
-        if (additionalProperties.containsKey(KotlinClientCodegen.COLLECTION_TYPE)) {
-            setCollectionType(additionalProperties[KotlinClientCodegen.COLLECTION_TYPE].toString())
+        if (additionalProperties.containsKey(COLLECTION_TYPE)) {
+            setCollectionType(additionalProperties[COLLECTION_TYPE].toString())
         }
 
-        if (KotlinClientCodegen.CollectionType.LIST.value == collectionType) {
+        if (CollectionType.LIST.value == collectionType) {
             typeMapping["array"] = "kotlin.collections.List"
             typeMapping["list"] = "kotlin.collections.List"
             additionalProperties["isList"] = true
@@ -241,50 +202,6 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
         fixSchemaType(schema)
         fixEmptyType(schema)
         return super.fromModel(name, schema)
-    }
-
-//    /**
-//     * Kotlin data classes cannot be without value. This functions adds ignore value to the class
-//     * to make sure it compiles. Make sure to check the schema definition.
-//     *
-//     * @param schema to be checked
-//     * @since 1.1.0
-//     */
-//    private fun fixEmptyType(schema: Schema<*>?) {
-//        schema?.let {
-//            if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema && (it.properties == null || it.properties.isEmpty())) {
-//                it.properties = java.util.HashMap<String, Schema<String>>().apply { put("ignore", StringSchema().apply { description("No values defined for this class. Please check schema definition for this class.") }) }.toMap()
-//            }
-//        }
-//    }
-
-    /**
-     * Fixes schemas that do not have set type. Not having a type would make them empty data classes
-     * that will not pass compilation.
-     *
-     * @param schema to be checked
-     * @since 1.1.0
-     */
-    private fun fixEmptyType(schema: Schema<*>?) {
-        schema?.let {
-            if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema && (it.type == null || it.type.isEmpty())) {
-                it.type = "string"
-            }
-        }
-    }
-
-    /**
-     * Fixes type for schema. There is an issue where type [SchemaTypeUtil.INTEGER_TYPE] with format
-     * [SchemaTypeUtil.INTEGER32_FORMAT] is wrongly represented as [SchemaTypeUtil.NUMBER_TYPE].
-     *
-     * @since 1.1.0
-     */
-    private fun fixSchemaType(schema: Schema<*>?) {
-        schema?.let {
-            if (it is IntegerSchema && it.type == SchemaTypeUtil.NUMBER_TYPE && it.format == SchemaTypeUtil.INTEGER32_FORMAT) {
-                it.type = SchemaTypeUtil.INTEGER_TYPE
-            }
-        }
     }
 
     /**
@@ -314,6 +231,173 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
             name = name.replace("\\.".toRegex(), "_DOT_")
         }
         return name
+    }
+
+    override fun postProcessModels(objs: Map<String?, Any?>): Map<String?, Any?>? {
+        val objects = super.postProcessModels(objs)
+        val models = objs["models"] as List<*>? ?: emptyList<Any>()
+        for (model in models) {
+            val mo = model as Map<*, *>
+            (mo["model"] as CodegenModel?)?.let {
+                // escape the variable base name for use as a string literal
+                Stream.of(
+                    it.vars,
+                    it.allVars,
+                    it.optionalVars,
+                    it.requiredVars,
+                    it.readOnlyVars,
+                    it.readWriteVars,
+                    it.parentVars
+                ).flatMap { obj: List<CodegenProperty> -> obj.stream() }.forEach { property ->
+                    property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
+                        property.baseName.replace("$", "\\$")
+                }
+            }
+        }
+        return objects
+    }
+
+    override fun postProcessOperationsWithModels(
+        objs: Map<String?, Any?>,
+        allModels: List<Any?>?
+    ): Map<String, Any>? {
+        super.postProcessOperationsWithModels(objs, allModels)
+        val operations = objs["operations"] as Map<String, Any>?
+        if (operations != null) {
+            (operations["operation"] as List<*>?)?.forEach { operation ->
+                if (operation is CodegenOperation && operation.hasConsumes == java.lang.Boolean.TRUE) {
+                    if (isMultipartType(operation.consumes)) {
+                        operation.isMultipart = java.lang.Boolean.TRUE
+                    }
+                }
+            }
+        }
+        return operations
+    }
+
+    private fun isMultipartType(consumes: List<Map<String, String>>): Boolean {
+        val firstType = consumes[0]
+        return "multipart/form-data" == firstType["mediaType"]
+    }
+
+    private fun initArtifact() {
+        artifactId = "kotlin-retrofit-client"
+        packageName = "cz.eman.swagger"
+    }
+
+    private fun initTemplates() {
+        outputFolder = "generated-code" + File.separator + "kotlin-retrofit-client"
+        modelTemplateFiles["model.mustache"] = ".kt"
+        apiTemplateFiles["api.mustache"] = ".kt"
+        // TODO parameter if use api with header param or not
+        //apiTemplateFiles["api_without_header.mustache"] = ".kt"
+        modelDocTemplateFiles["model_doc.mustache"] = ".md"
+        apiDocTemplateFiles["api_doc.mustache"] = ".md"
+        templateDir = "kotlin-retrofit-client"
+        embeddedTemplateDir = templateDir
+        apiPackage = "$packageName.api"
+        modelPackage = "$packageName.model"
+    }
+
+    private fun initSettings() {
+        initSettingsDateLibrary()
+        initSettingsInfrastructure()
+        initSettingsCollectionType()
+    }
+
+    private fun initSettingsDateLibrary() {
+        val dateLibrary = CliOption(DATE_LIBRARY, "Option. Date library to use")
+        val dateOptions = HashMap<String, String>()
+        dateOptions[DateLibrary.THREETENBP.value] = "Threetenbp"
+        dateOptions[DateLibrary.STRING.value] = "String"
+        dateOptions[DateLibrary.JAVA8.value] = "Java 8 native JSR310"
+        dateOptions[DateLibrary.MILLIS.value] = "Date Time as Long"
+        dateLibrary.enum = dateOptions
+        cliOptions.add(dateLibrary)
+    }
+
+    private fun initSettingsInfrastructure() {
+        val infrastructureCli = CliOption(INFRASTRUCTURE_CLI, "Option to add infrastructure package")
+        val infraOptions = HashMap<String, String>()
+        infraOptions[GenerateApiType.INFRASTRUCTURE.value] = "Generate Infrastructure API"
+        infraOptions[GenerateApiType.API.value] = "Generate API"
+        infrastructureCli.enum = infraOptions
+        cliOptions.add(infrastructureCli)
+    }
+
+    private fun initSettingsCollectionType() {
+        val collectionType = CliOption(COLLECTION_TYPE, "Option. Collection type to use")
+        val collectionOptions: MutableMap<String, String> = java.util.HashMap()
+        collectionOptions[CollectionType.ARRAY.value] = "kotlin.Array"
+        collectionOptions[CollectionType.LIST.value] = "kotlin.collections.List"
+        collectionType.enum = collectionOptions
+        collectionType.default = this.collectionType
+        cliOptions.add(collectionType)
+    }
+
+    private fun initLibraries() {
+        supportedLibraries[RETROFIT2] =
+            "[DEFAULT] Platform: Retrofit2. HTTP client: OkHttp 3.2.0+ (Android 2.3+ and Java 7+). JSON processing: Moshi 1.5.0+."
+
+        val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
+        libraryOption.enum = supportedLibraries
+        libraryOption.default = RETROFIT2
+        cliOptions.add(libraryOption)
+        setLibrary(RETROFIT2)
+    }
+
+    private fun setDateLibrary(library: String) {
+        this.dateLib = library
+    }
+
+    private fun setCollectionType(collectionType: String) {
+        this.collectionType = collectionType
+    }
+
+    //    /**
+//     * Kotlin data classes cannot be without value. This functions adds ignore value to the class
+//     * to make sure it compiles. Make sure to check the schema definition.
+//     *
+//     * @param schema to be checked
+//     * @since 1.1.0
+//     */
+//    private fun fixEmptyType(schema: Schema<*>?) {
+//        schema?.let {
+//            if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema && (it.properties == null || it.properties.isEmpty())) {
+//                it.properties = java.util.HashMap<String, Schema<String>>().apply { put("ignore", StringSchema().apply { description("No values defined for this class. Please check schema definition for this class.") }) }.toMap()
+//            }
+//        }
+//    }
+
+    /**
+     * Fixes schemas that do not have set type. Not having a type would make them empty data classes
+     * that will not pass compilation.
+     *
+     * TODO: add option to cast empty data class as String (json)
+     *
+     * @param schema to be checked
+     * @since 1.1.0
+     */
+    private fun fixEmptyType(schema: Schema<*>?) {
+        schema?.let {
+            if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema && (it.type == null || it.type.isEmpty())) {
+                it.type = "string"
+            }
+        }
+    }
+
+    /**
+     * Fixes type for schema. There is an issue where type [SchemaTypeUtil.INTEGER_TYPE] with format
+     * [SchemaTypeUtil.INTEGER32_FORMAT] is wrongly represented as [SchemaTypeUtil.NUMBER_TYPE].
+     *
+     * @since 1.1.0
+     */
+    private fun fixSchemaType(schema: Schema<*>?) {
+        schema?.let {
+            if (it is IntegerSchema && it.type == SchemaTypeUtil.NUMBER_TYPE && it.format == SchemaTypeUtil.INTEGER32_FORMAT) {
+                it.type = SchemaTypeUtil.INTEGER_TYPE
+            }
+        }
     }
 
 }

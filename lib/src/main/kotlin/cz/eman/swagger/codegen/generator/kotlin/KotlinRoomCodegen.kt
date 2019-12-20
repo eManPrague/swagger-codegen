@@ -17,7 +17,7 @@ open class KotlinRoomCodegen : AbstractKotlinCodegen() {
 
     private var dateLib = DateLibrary.JAVA8.value
 
-    enum class DateLibrary private constructor(val value: String) {
+    enum class DateLibrary constructor(val value: String) {
         STRING("string"),
         THREETENBP("threetenbp"),
         JAVA8("java8"),
