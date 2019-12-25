@@ -10,8 +10,12 @@ import java.util.stream.Stream
 
 /**
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
+ * @author eMan s.r.o. (david.sucharda@eman.cz)
+ *
+ * TODO: add support for ROOM 2 (androidx)
+ * TODO: fix array in array types
  */
-open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
+open class KotlinClientCodegen : AbstractKotlinCodegen() {
 
     private var collectionType = CollectionType.ARRAY.value
     private var dateLib = DateLibrary.JAVA8.value
@@ -20,6 +24,7 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
 
     companion object {
         const val RETROFIT2 = "retrofit2"
+        const val ROOM = "room"
 
         const val CLASS_API_SUFFIX = "Service"
         const val DATE_LIBRARY = "dateLibrary"
@@ -38,7 +43,8 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
     }
 
     enum class CollectionType(val value: String) {
-        ARRAY("array"), LIST("list");
+        ARRAY("array"),
+        LIST("list");
     }
 
     enum class GenerateApiType constructor(val value: String) {
@@ -52,7 +58,7 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
     }
 
     /**
-     * Constructs an instance of `KotlinRetrofitCodegen`.
+     * Constructs an instance of `KotlinClientCodegen`.
      */
     init {
         enumPropertyNaming = CodegenConstants.ENUM_PROPERTY_NAMING_TYPE.camelCase
@@ -62,16 +68,23 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
         initLibraries()
     }
 
+    override fun setLibrary(library: String?) {
+        super.setLibrary(library)
+        supportedLibraries.keys.forEach { additionalProperties[it] = it == library }
+        initArtifact()
+        initTemplates()
+    }
+
     override fun getTag(): CodegenType {
         return CodegenType.OTHER
     }
 
     override fun getName(): String {
-        return "kotlin-retrofit-client"
+        return "kotlin-client-v2"
     }
 
     override fun getHelp(): String {
-        return "Generates a Kotlin Retrofit2 classes."
+        return "Generates a Kotlin classes for specific library."
     }
 
     override fun toModelFilename(name: String): String {
@@ -102,19 +115,6 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
     override fun fromModel(name: String?, schema: Schema<*>?): CodegenModel {
         emptyDataClassAsString(schema)
         return super.fromModel(name, schema)
-    }
-
-    /**
-     * Enum number values are not escaped to String.
-     *
-     * @since 1.1.0
-     */
-    override fun toEnumValue(value: String, datatype: String): String {
-        return if (datatype in numberDataTypes) {
-            value
-        } else {
-            "\"" + escapeText(value) + "\""
-        }
     }
 
     /**
@@ -177,16 +177,17 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
     }
 
     /**
-     * Initializes artifact settings such as ID, outputFolder or package name.
+     * Initializes artifact settings such as id, output folder or package name.
      *
      * @since 1.1.0
      */
     private fun initArtifact() {
-        artifactId = "kotlin-retrofit-client"
+        val libraryArtifact = if (library != null) "-$library" else ""
+        artifactId = "kotlin${libraryArtifact}-client"
         packageName = "cz.eman.swagger"
         apiPackage = "$packageName.api"
         modelPackage = "$packageName.model"
-        outputFolder = "generated-code" + File.separator + "kotlin-retrofit-client"
+        outputFolder = "generated-code" + File.separator + artifactId
     }
 
     /**
@@ -195,14 +196,20 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
      * @since 1.1.0
      */
     private fun initTemplates() {
-        templateDir = "kotlin-retrofit-client"
+        templateDir = "kotlin-client-v2"
         embeddedTemplateDir = templateDir
         modelTemplateFiles["model.mustache"] = ".kt"
-        apiTemplateFiles["api.mustache"] = ".kt"
         // TODO parameter if use api with header param or not
         //apiTemplateFiles["api_without_header.mustache"] = ".kt"
         modelDocTemplateFiles["model_doc.mustache"] = ".md"
-        apiDocTemplateFiles["api_doc.mustache"] = ".md"
+
+        if (library != ROOM) {
+            apiTemplateFiles["api.mustache"] = ".kt"
+            apiDocTemplateFiles["api_doc.mustache"] = ".md"
+        } else {
+            apiTemplateFiles.clear()
+            apiDocTemplateFiles.clear()
+        }
     }
 
     /**
@@ -288,7 +295,9 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
      */
     private fun initLibraries() {
         supportedLibraries[RETROFIT2] =
-            "[DEFAULT] Platform: Retrofit2. HTTP client: OkHttp 3.2.0+ (Android 2.3+ and Java 7+). JSON processing: Moshi 1.5.0+."
+            "[DEFAULT] Platform: Retrofit2 2.6.2. JSON processing: Moshi 1.9.2."
+        supportedLibraries[ROOM] =
+            "Platform: Room 1.1.1. JSON processing: Moshi 1.9.2."
 
         val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
@@ -424,4 +433,5 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
         val firstType = consumes[0]
         return "multipart/form-data" == firstType["mediaType"]
     }
+
 }

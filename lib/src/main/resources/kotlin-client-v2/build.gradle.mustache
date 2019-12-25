@@ -11,6 +11,9 @@ buildscript {
     {{#retrofit2}}
     ext.retrofitVersion = '2.6.2'
     {{/retrofit2}}
+    {{#room}}
+    ext.roomVersion = '1.1.1'
+    {{/room}}
 
     repositories {
         mavenCentral()
@@ -68,5 +71,9 @@ dependencies {
     {{/moshi}}
     compile "com.squareup.retrofit2:converter-scalars:$retrofitVersion"
     {{/retrofit2}}
+    {{#room}}
+    compile "android.arch.persistence.room:runtime:$roomVersion"
+    compile "android.arch.persistence.room:compiler:$roomVersion"
+    {{/room}}
     testCompile "io.kotlintest:kotlintest-runner-junit5:3.1.0"
 }

@@ -1,8 +1,8 @@
-# Swagger / OpenApi 3 Codegen
+# OpenApi 3 Codegen / Swagger
 
-[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=1.0.0) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/1.0.0/link)
+[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=1.1.0) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/1.1.0/link)
 
-The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/swagger-api/swagger-codegen with modifications
+The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
 ### How to use it?
 
@@ -17,7 +17,7 @@ buildscript {
 
     // Kotlin Gradle DSL
     dependencies {
-        classpath("cz.eman.swagger:swagger-codegen:1.0.0")
+        classpath("cz.eman.swagger:swagger-codegen:1.1.0")
     }
 }
 ```
@@ -37,6 +37,7 @@ plugins {
 swagger {
     setInputSpec("${project.projectDir.absolutePath}/data/api.yaml")
     setOutputDir("${project.buildDir.absolutePath}/swagger")
+    setLibrary("retrofit2")
     setGeneratorName("cz.eman.swagger.codegen.generator.kotlin.KotlinRetrofitCodegen")
 
     val additionalProperties = HashMap<String, Any>()
@@ -45,6 +46,7 @@ swagger {
     additionalProperties["enumPropertyNaming"] = "UPPERCASE"
     additionalProperties["modelNameSuffix"] = "Dto"
     additionalProperties["generateInfrastructure"] = false
+    additionalProperties["emptyDataClasses"] = false
     additionalProperties["apiPackage"] = "cz.mypackage.service"
     additionalProperties["modelPackage"] = "cz.mypackage.model"
     setAdditionalProperties(additionalProperties)
@@ -53,12 +55,14 @@ swagger {
 ```
 - `inputSpec` - specify OpenAPI yaml file
 - `outputDir` - specify output directory
+- `setLibrary` - sets library to generate. Can be either "retrofit2" or "room". Default is "retrofit2".
 - `generatorName` - name or class of supported generator
 - AdditionalProperties:
     - `templateEngine` - Currently this generator is supporting only `mustache`. Support of `handlebars` is in a progress. 
-    - `dateLibrary` - 
-    - `enumPropertyNaming` - 
-    - `generateInfrastructure` -
+    - `dateLibrary` - By this property you can set date library used to serialize dates and times.
+    - `enumPropertyNaming` - By this property you can change enum property naming style. ("camelCase", "PascalCase", "snake_case", "original", "UPPERCASE")
+    - `generateInfrastructure` - By this property you can enable to generate API infrastructure.
+    - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it will not pass Kotlin compilation.)
     - `modelNameSuffix` - By this property you can define suffix to all model classes. E.g. `UserDto`, ...
     - `apiPackage` - By this property you can define a package name for your service classes
     - `modelPackage` - By this property you can define a package name for your model classes
@@ -66,6 +70,6 @@ swagger {
 If your OpenApi contains some specific objects for parsing JSON, .... You need add the Moshi dependencies
 
 ```kotlin
-implementation("com.squareup.moshi:moshi-kotlin:1.5.0")
-implementation("com.squareup.moshi:moshi-adapters:1.5.0")
+implementation("com.squareup.moshi:moshi-kotlin:1.9.2")
+implementation("com.squareup.moshi:moshi-adapters:1.9.2")
 ```
