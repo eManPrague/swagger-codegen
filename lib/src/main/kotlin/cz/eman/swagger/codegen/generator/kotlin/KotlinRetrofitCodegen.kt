@@ -21,8 +21,8 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
     companion object {
         const val RETROFIT2 = "retrofit2"
 
-        const val DATE_LIBRARY = "dateLibrary"
         const val CLASS_API_SUFFIX = "Service"
+        const val DATE_LIBRARY = "dateLibrary"
         const val COLLECTION_TYPE = "collectionType"
         const val EMPTY_DATA_CLASS = "emptyDataClasses"
         const val EMPTY_DATA_CLASS_DESCRIPTION = "Option to allow empty data classes (default: false)"
@@ -183,10 +183,10 @@ open class KotlinRetrofitCodegen : AbstractKotlinCodegen() {
      */
     private fun initArtifact() {
         artifactId = "kotlin-retrofit-client"
-        outputFolder = "generated-code" + File.separator + "kotlin-retrofit-client"
         packageName = "cz.eman.swagger"
         apiPackage = "$packageName.api"
         modelPackage = "$packageName.model"
+        outputFolder = "generated-code" + File.separator + "kotlin-retrofit-client"
     }
 
     /**
