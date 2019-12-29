@@ -11,9 +11,6 @@ import java.util.stream.Stream
 /**
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  * @author eMan s.r.o. (david.sucharda@eman.cz)
- *
- * TODO: add support for ROOM 2 (androidx)
- * TODO: fix array in array types
  */
 open class KotlinClientCodegen : AbstractKotlinCodegen() {
 
@@ -25,12 +22,15 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
     companion object {
         const val RETROFIT2 = "retrofit2"
         const val ROOM = "room"
+        const val ROOM2 = "room2"
 
         const val CLASS_API_SUFFIX = "Service"
         const val DATE_LIBRARY = "dateLibrary"
+        const val DATE_LIBRARY_DESCRIPTION = "Option to change Date library to use (default: java8)."
         const val COLLECTION_TYPE = "collectionType"
+        const val COLLECTION_TYPE_DESCRIPTION = "Option to change Collection type to use (default: array)."
         const val EMPTY_DATA_CLASS = "emptyDataClasses"
-        const val EMPTY_DATA_CLASS_DESCRIPTION = "Option to allow empty data classes (default: false)"
+        const val EMPTY_DATA_CLASS_DESCRIPTION = "Option to allow empty data classes (default: false)."
 
         const val VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal"
     }
@@ -203,7 +203,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         //apiTemplateFiles["api_without_header.mustache"] = ".kt"
         modelDocTemplateFiles["model_doc.mustache"] = ".md"
 
-        if (library != ROOM) {
+        if (library != ROOM && library != ROOM2) {
             apiTemplateFiles["api.mustache"] = ".kt"
             apiDocTemplateFiles["api_doc.mustache"] = ".md"
         } else {
@@ -231,7 +231,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      * @since 1.1.0
      */
     private fun initSettingsDateLibrary() {
-        val dateLibrary = CliOption(DATE_LIBRARY, "Option. Date library to use")
+        val dateLibrary = CliOption(DATE_LIBRARY, DATE_LIBRARY_DESCRIPTION)
         val dateOptions = HashMap<String, String>()
         dateOptions[DateLibrary.THREETENBP.value] = "Threetenbp"
         dateOptions[DateLibrary.STRING.value] = "String"
@@ -263,7 +263,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      * @since 1.1.0
      */
     private fun initSettingsCollectionType() {
-        val collectionTypeCli = CliOption(COLLECTION_TYPE, "Option. Collection type to use")
+        val collectionTypeCli = CliOption(COLLECTION_TYPE, COLLECTION_TYPE_DESCRIPTION)
         val collectionOptions: MutableMap<String, String> = java.util.HashMap()
         collectionOptions[CollectionType.ARRAY.value] = "kotlin.Array"
         collectionOptions[CollectionType.LIST.value] = "kotlin.collections.List"
@@ -297,7 +297,9 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         supportedLibraries[RETROFIT2] =
             "[DEFAULT] Platform: Retrofit2 2.6.2. JSON processing: Moshi 1.9.2."
         supportedLibraries[ROOM] =
-            "Platform: Room 1.1.1. JSON processing: Moshi 1.9.2."
+            "Platform: Room v1. JSON processing: Moshi 1.9.2."
+        supportedLibraries[ROOM2] =
+            "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
 
         val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
