@@ -15,11 +15,11 @@ import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 
 /**
-* {{{description}}}
+ * {{{description}}}
 {{#vars}}
-* @param {{{name}}} {{{description}}}
+ * @param {{{name}}} {{{description}}}
 {{/vars}}
-*/
+ */
 @Entity{{#vendorExtensions.x-pk}}{{#-last}}(primaryKeys = [  {{#vendorExtensions.x-pk}}"{{.}}"{{^-last}},{{/-last}} {{/vendorExtensions.x-pk}} ]) {{/-last}}{{/vendorExtensions.x-pk}}
 {{#nonPublicApi}}internal {{/nonPublicApi}}data class {{classname}} (
 {{^vendorExtensions.x-pk}}

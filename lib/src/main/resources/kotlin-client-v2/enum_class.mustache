@@ -12,9 +12,9 @@ import kotlinx.serialization.internal.CommonEnumSerializer
 {{/multiplatform}}
 
 /**
-* {{{description}}}
-* Values: {{#allowableValues}}{{#enumVars}}{{&name}}{{^-last}},{{/-last}}{{/enumVars}}{{/allowableValues}}
-*/
+ * {{{description}}}
+ * Values: {{#allowableValues}}{{#enumVars}}{{&name}}{{^-last}},{{/-last}}{{/enumVars}}{{/allowableValues}}
+ */
 {{#multiplatform}}
 @Serializable(with = {{classname}}.Serializer::class)
 {{/multiplatform}}
