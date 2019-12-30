@@ -405,65 +405,31 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      * @since 1.1.0
      */
     private fun processOptsInfrastructure() {
-        var generateInfrastructure = true
+        var generateInfrastructure = false
         if (additionalProperties.containsKey(GENERATE_INFRASTRUCTURE_API)) {
             generateInfrastructure = convertPropertyToBooleanAndWriteBack(GENERATE_INFRASTRUCTURE_API)
         }
 
         if (generateInfrastructure) {
-            val infrastructureFolder =
-                (sourceFolder + File.separator + packageName + File.separator + "infrastructure").replace(".", "/")
+            val infrastructureFolder = (sourceFolder + File.separator + packageName + File.separator + "infrastructure").replace(".", "/")
             //supportingFiles.add(SupportingFile("infrastructure/ApiClient.kt.mustache", infrastructureFolder, "ApiClient.kt"))
-            supportingFiles.add(
-                SupportingFile(
-                    "infrastructure/ApiAbstractions.kt.mustache",
-                    infrastructureFolder,
-                    "ApiAbstractions.kt"
-                )
-            )
-            supportingFiles.add(
-                SupportingFile(
-                    "infrastructure/ApiInfrastructureResponse.kt.mustache",
-                    infrastructureFolder,
-                    "ApiInfrastructureResponse.kt"
-                )
-            )
-            supportingFiles.add(
-                SupportingFile(
-                    "infrastructure/ApplicationDelegates.kt.mustache",
-                    infrastructureFolder,
-                    "ApplicationDelegates.kt"
-                )
-            )
-            supportingFiles.add(
-                SupportingFile(
-                    "infrastructure/RequestConfig.kt.mustache",
-                    infrastructureFolder,
-                    "RequestConfig.kt"
-                )
-            )
-            supportingFiles.add(
-                SupportingFile(
-                    "infrastructure/RequestMethod.kt.mustache",
-                    infrastructureFolder,
-                    "RequestMethod.kt"
-                )
-            )
-            supportingFiles.add(
-                SupportingFile(
-                    "infrastructure/ResponseExtensions.kt.mustache",
-                    infrastructureFolder,
-                    "ResponseExtensions.kt"
-                )
-            )
-            supportingFiles.add(
-                SupportingFile(
-                    "infrastructure/Serializer.kt.mustache",
-                    infrastructureFolder,
-                    "Serializer.kt"
-                )
-            )
+            supportingFiles.add(SupportingFile("infrastructure/ApiAbstractions.kt.mustache", infrastructureFolder, "ApiAbstractions.kt"))
+            supportingFiles.add(SupportingFile("infrastructure/ApiInfrastructureResponse.kt.mustache", infrastructureFolder, "ApiInfrastructureResponse.kt"))
+            supportingFiles.add(SupportingFile("infrastructure/ApplicationDelegates.kt.mustache", infrastructureFolder, "ApplicationDelegates.kt"))
+            supportingFiles.add(SupportingFile("infrastructure/RequestConfig.kt.mustache", infrastructureFolder, "RequestConfig.kt"))
+            supportingFiles.add(SupportingFile("infrastructure/RequestMethod.kt.mustache", infrastructureFolder, "RequestMethod.kt"))
+            supportingFiles.add(SupportingFile("infrastructure/ResponseExtensions.kt.mustache", infrastructureFolder, "ResponseExtensions.kt"))
+            supportingFiles.add(SupportingFile("infrastructure/Serializer.kt.mustache", infrastructureFolder, "Serializer.kt"))
             supportingFiles.add(SupportingFile("infrastructure/Errors.kt.mustache", infrastructureFolder, "Errors.kt"))
+            if (library == RETROFIT2) {
+                supportingFiles.add(SupportingFile("infrastructure/ByteArrayAdapter.kt.mustache", infrastructureFolder, "ByteArrayAdapter.kt"))
+                supportingFiles.add(SupportingFile("infrastructure/LocalDateAdapter.kt.mustache", infrastructureFolder, "LocalDateAdapter.kt"))
+                supportingFiles.add(SupportingFile("infrastructure/LocalDateTimeAdapter.kt.mustache", infrastructureFolder, "LocalDateTimeAdapter.kt"))
+                supportingFiles.add(SupportingFile("infrastructure/UUIDAdapter.kt.mustache", infrastructureFolder, "UUIDAdapter.kt"))
+                if (getSerializationLibrary() == SERIALIZATION_LIBRARY_TYPE.gson) {
+                    supportingFiles.add(SupportingFile("infrastructure/DateAdapter.kt.mustache", infrastructureFolder, "DateAdapter.kt"))
+                }
+            }
         }
     }
 
