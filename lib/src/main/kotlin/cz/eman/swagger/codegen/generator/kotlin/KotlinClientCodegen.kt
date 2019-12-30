@@ -44,8 +44,6 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         const val ROOM = "room"
         const val ROOM2 = "room2"
 
-        const val CLASS_API_SUFFIX = "Service"
-
         const val VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal"
         const val VENDOR_EXTENSION_IS_ALIAS = "x-is-alias"
     }
@@ -112,7 +110,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
     }
 
     override fun toApiName(name: String?): String {
-        return super.toApiName(name) + CLASS_API_SUFFIX
+        return super.toApiName(name) + apiNameSuffix
     }
 
     /**
@@ -516,6 +514,10 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
 
         if (additionalProperties.containsKey(GENERATE_PRIMITIVE_TYPE_ALIAS)) {
             generatePrimitiveTypeAlias = convertPropertyToBooleanAndWriteBack(GENERATE_PRIMITIVE_TYPE_ALIAS)
+        }
+
+        if (additionalProperties.containsKey(CodegenConstants.MODEL_NAME_SUFFIX)) {
+            setModelNameSuffix(additionalProperties[CodegenConstants.MODEL_NAME_SUFFIX] as String?)
         }
     }
 

@@ -45,6 +45,7 @@ swagger {
     additionalProperties["dateLibrary"] = "millis"
     additionalProperties["enumPropertyNaming"] = "UPPERCASE"
     additionalProperties["modelNameSuffix"] = "Dto"
+    additionalProperties["apiNameSuffix"] = "Service"
     additionalProperties["generateInfrastructure"] = false
     additionalProperties["emptyDataClasses"] = false
     additionalProperties["generateAliasAsModel"] = true
@@ -71,8 +72,11 @@ swagger {
     - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
     - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
     - `modelNameSuffix` - By this property you can define suffix to all model classes. E.g. `UserDto`, ...
+    - `apiNameSuffix` - By this property you can define suffix to all api classes. E.g. `UserService`, ...
     - `apiPackage` - By this property you can define a package name for your service classes
     - `modelPackage` - By this property you can define a package name for your model classes
+
+Other options can be found [here](https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-maven-plugin/README.md).
 
 If your OpenApi contains some specific objects for parsing JSON, .... You need add the Moshi dependencies
 
