@@ -1,22 +1,42 @@
 package cz.eman.swagger.codegen.generator.kotlin
 
-import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API
-import cz.eman.swagger.codegen.language.INFRASTRUCTURE_CLI
+import cz.eman.swagger.codegen.language.*
 import io.swagger.v3.oas.models.media.*
 import org.openapitools.codegen.*
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import org.slf4j.LoggerFactory
 import java.io.File
-import java.util.stream.Stream
 
 /**
+ * Kotlin client generator based on [AbstractKotlinCodegen]. Contains libraries and options that are not supported in
+ * default OpenAPI generator (https://github.com/OpenAPITools/openapi-generator).
+ *
+ * Supported libraries:
+ * - `Retrofit2` - generates api containing retrofit functions and required model classes.
+ * - `Room v1` - generated model classes supporting Room up to version 1.1.1.
+ * - `Room v2 (androidx)` - generates model classes supporting Room from version 2.0.0.
+ *
+ * Additional generator options:
+ * - `dateLibrary` - By this property you can set date library used to serialize dates and times.
+ * - `generateInfrastructure` - By this property you can enable to generate API infrastructure.
+ * - `collectionType` - By this property cou can change collection type.
+ * - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
+ * - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
+ * - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
+ *
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  * @author eMan s.r.o. (david.sucharda@eman.cz)
+ * @since 1.1.0
  */
 open class KotlinClientCodegen : AbstractKotlinCodegen() {
 
-    private var collectionType = CollectionType.ARRAY.value
+    private val LOGGER = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
+
     private var dateLib = DateLibrary.JAVA8.value
-    private var allowEmptyDataClasses = false
+    private var collectionType = CollectionType.ARRAY.value
+    private var emptyDataClasses = false
+    private var composedArrayAsAny = true
+    private var generatePrimitiveTypeAlias = false
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
     companion object {
@@ -25,14 +45,9 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         const val ROOM2 = "room2"
 
         const val CLASS_API_SUFFIX = "Service"
-        const val DATE_LIBRARY = "dateLibrary"
-        const val DATE_LIBRARY_DESCRIPTION = "Option to change Date library to use (default: java8)."
-        const val COLLECTION_TYPE = "collectionType"
-        const val COLLECTION_TYPE_DESCRIPTION = "Option to change Collection type to use (default: array)."
-        const val EMPTY_DATA_CLASS = "emptyDataClasses"
-        const val EMPTY_DATA_CLASS_DESCRIPTION = "Option to allow empty data classes (default: false)."
 
         const val VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal"
+        const val VENDOR_EXTENSION_IS_ALIAS = "x-is-alias"
     }
 
     enum class DateLibrary constructor(val value: String) {
@@ -52,11 +67,6 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         API("api")
     }
 
-    enum class DtoSuffix constructor(val value: String) {
-        DTO("dto"),
-        DEFAULT("default")
-    }
-
     /**
      * Constructs an instance of `KotlinClientCodegen`.
      */
@@ -70,6 +80,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
 
     override fun setLibrary(library: String?) {
         super.setLibrary(library)
+        LOGGER.info("Setting library: $library")
         supportedLibraries.keys.forEach { additionalProperties[it] = it == library }
         initArtifact()
         initTemplates()
@@ -104,16 +115,29 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         return super.toApiName(name) + CLASS_API_SUFFIX
     }
 
+    /**
+     * Processes and adds generator options.
+     *
+     * @since 1.1.0
+     */
     override fun processOpts() {
         super.processOpts()
         processOptsDateLib()
         processOptsInfrastructure()
         processOptsCollectionType()
+        processOptsAdditionalSupportingFiles()
         processOptsAdditional()
     }
 
+    /**
+     * Modifies schema before the actual [fromModel] function is called. Modifies model based on [emptyDataClasses] and
+     * [composedArrayAsAny] options.
+     *
+     * @since 1.1.0
+     */
     override fun fromModel(name: String?, schema: Schema<*>?): CodegenModel {
-        emptyDataClassAsString(schema)
+        emptyDataClassAsString(name, schema)
+        composedArrayAsAny(name, schema)
         return super.fromModel(name, schema)
     }
 
@@ -133,30 +157,28 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         return name
     }
 
+    /**
+     * Post process models and adds vendor extensions.
+     *
+     * @since 1.1.0
+     */
     override fun postProcessModels(objs: Map<String?, Any?>): Map<String?, Any?>? {
         val objects = super.postProcessModels(objs)
         val models = objs["models"] as List<*>? ?: emptyList<Any>()
         for (model in models) {
             val mo = model as Map<*, *>
             (mo["model"] as CodegenModel?)?.let {
-                // escape the variable base name for use as a string literal
-                Stream.of(
-                    it.vars,
-                    it.allVars,
-                    it.optionalVars,
-                    it.requiredVars,
-                    it.readOnlyVars,
-                    it.readWriteVars,
-                    it.parentVars
-                ).flatMap { obj: List<CodegenProperty> -> obj.stream() }.forEach { property ->
-                    property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
-                        property.baseName.replace("$", "\\$")
-                }
+                setModelVendorExtensions(it)
             }
         }
         return objects
     }
 
+    /**
+     * Post process operations with models to check if the operation is multipart ot not.
+     *
+     * @since 1.1.0
+     */
     @Suppress("UNCHECKED_CAST")
     override fun postProcessOperationsWithModels(
         objs: Map<String?, Any?>,
@@ -199,14 +221,14 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         templateDir = "kotlin-client-v2"
         embeddedTemplateDir = templateDir
         modelTemplateFiles["model.mustache"] = ".kt"
-        // TODO parameter if use api with header param or not
-        //apiTemplateFiles["api_without_header.mustache"] = ".kt"
         modelDocTemplateFiles["model_doc.mustache"] = ".md"
 
         if (library != ROOM && library != ROOM2) {
+            LOGGER.info("Adding API template files")
             apiTemplateFiles["api.mustache"] = ".kt"
             apiDocTemplateFiles["api_doc.mustache"] = ".md"
         } else {
+            LOGGER.info("Removing API template files")
             apiTemplateFiles.clear()
             apiDocTemplateFiles.clear()
         }
@@ -222,6 +244,8 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         initSettingsInfrastructure()
         initSettingsCollectionType()
         initSettingsEmptyDataClass()
+        initSettingsComposedArrayAny()
+        initSettingsGeneratePrimitiveTypeAlias()
     }
 
     /**
@@ -248,7 +272,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      * @since 1.1.0
      */
     private fun initSettingsInfrastructure() {
-        val infrastructureCli = CliOption(INFRASTRUCTURE_CLI, "Option to add infrastructure package")
+        val infrastructureCli = CliOption(GENERATE_INFRASTRUCTURE_API, GENERATE_INFRASTRUCTURE_API_DESCRIPTION)
         val infraOptions = HashMap<String, String>()
         infraOptions[GenerateApiType.INFRASTRUCTURE.value] = "Generate Infrastructure API"
         infraOptions[GenerateApiType.API.value] = "Generate API"
@@ -289,7 +313,38 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
     }
 
     /**
-     * Initializes supported libraries for this generator. For now there is only [RETROFIT2] library supported.
+     * Settings to cast array of composed schema (Array<OneOf...>) to array of kotlin.Any (Array<kotlin.Any).
+     *
+     * @since 1.1.0
+     */
+    private fun initSettingsComposedArrayAny() {
+        cliOptions.add(
+            CliOption.newBoolean(
+                COMPOSED_ARRAY_ANY,
+                COMPOSED_ARRAY_ANY_DESCRIPTION,
+                true
+            )
+        )
+    }
+
+    /**
+     * Settings to generate type aliases for primitives. Default codegen does not generate aliases to primitives and
+     * instead it uses the primitives. Viz: https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultGenerator.java#L496.
+     *
+     * @since 1.1.0
+     */
+    private fun initSettingsGeneratePrimitiveTypeAlias() {
+        cliOptions.add(
+            CliOption.newBoolean(
+                GENERATE_PRIMITIVE_TYPE_ALIAS,
+                GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
+                false
+            )
+        )
+    }
+
+    /**
+     * Initializes supported libraries for this generator. Supported libraries are: [RETROFIT2], [ROOM] and [ROOM2].
      *
      * @since 1.1.0
      */
@@ -353,19 +408,62 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
     private fun processOptsInfrastructure() {
         var generateInfrastructure = true
         if (additionalProperties.containsKey(GENERATE_INFRASTRUCTURE_API)) {
-            generateInfrastructure = additionalProperties[GENERATE_INFRASTRUCTURE_API].toString() == "true"
+            generateInfrastructure = convertPropertyToBooleanAndWriteBack(GENERATE_INFRASTRUCTURE_API)
         }
 
         if (generateInfrastructure) {
-            val infrastructureFolder = (sourceFolder + File.separator + packageName + File.separator + "infrastructure").replace(".", "/")
+            val infrastructureFolder =
+                (sourceFolder + File.separator + packageName + File.separator + "infrastructure").replace(".", "/")
             //supportingFiles.add(SupportingFile("infrastructure/ApiClient.kt.mustache", infrastructureFolder, "ApiClient.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApiAbstractions.kt.mustache", infrastructureFolder, "ApiAbstractions.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApiInfrastructureResponse.kt.mustache", infrastructureFolder, "ApiInfrastructureResponse.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApplicationDelegates.kt.mustache", infrastructureFolder, "ApplicationDelegates.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/RequestConfig.kt.mustache", infrastructureFolder, "RequestConfig.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/RequestMethod.kt.mustache", infrastructureFolder, "RequestMethod.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ResponseExtensions.kt.mustache", infrastructureFolder, "ResponseExtensions.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/Serializer.kt.mustache", infrastructureFolder, "Serializer.kt"))
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ApiAbstractions.kt.mustache",
+                    infrastructureFolder,
+                    "ApiAbstractions.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ApiInfrastructureResponse.kt.mustache",
+                    infrastructureFolder,
+                    "ApiInfrastructureResponse.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ApplicationDelegates.kt.mustache",
+                    infrastructureFolder,
+                    "ApplicationDelegates.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/RequestConfig.kt.mustache",
+                    infrastructureFolder,
+                    "RequestConfig.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/RequestMethod.kt.mustache",
+                    infrastructureFolder,
+                    "RequestMethod.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/ResponseExtensions.kt.mustache",
+                    infrastructureFolder,
+                    "ResponseExtensions.kt"
+                )
+            )
+            supportingFiles.add(
+                SupportingFile(
+                    "infrastructure/Serializer.kt.mustache",
+                    infrastructureFolder,
+                    "Serializer.kt"
+                )
+            )
             supportingFiles.add(SupportingFile("infrastructure/Errors.kt.mustache", infrastructureFolder, "Errors.kt"))
         }
     }
@@ -389,18 +487,36 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
     }
 
     /**
-     * Processes options for additional settings like allowing empty data classes and adds additional supporting files.
+     * Adds additional supporting files like Readme, build.gradle or settings.gradle.
+     *
+     * @since 1.1.0
+     */
+    private fun processOptsAdditionalSupportingFiles() {
+        supportingFiles.add(SupportingFile("README.mustache", "", "README.md"))
+        supportingFiles.add(SupportingFile("build.gradle.mustache", "", "build.gradle"))
+        supportingFiles.add(SupportingFile("settings.gradle.mustache", "", "settings.gradle"))
+    }
+
+    /**
+     * Processes options for additional settings:
+     * - Empty data class: allows generating empty data classes. For more information see [initSettingsEmptyDataClass].
+     * - Composed array as any: transforms array of composed to array or kotlin.Any. For more information see [initSettingsComposedArrayAny].
+     * - Generate primitive type alias: generates alias for primitive objects. For more information see [initSettingsGeneratePrimitiveTypeAlias].
      *
      * @since 1.1.0
      */
     private fun processOptsAdditional() {
         if (additionalProperties.containsKey(EMPTY_DATA_CLASS)) {
-            allowEmptyDataClasses = convertPropertyToBooleanAndWriteBack(EMPTY_DATA_CLASS)
+            emptyDataClasses = convertPropertyToBooleanAndWriteBack(EMPTY_DATA_CLASS)
         }
 
-        supportingFiles.add(SupportingFile("README.mustache", "", "README.md"))
-        supportingFiles.add(SupportingFile("build.gradle.mustache", "", "build.gradle"))
-        supportingFiles.add(SupportingFile("settings.gradle.mustache", "", "settings.gradle"))
+        if (additionalProperties.containsKey(COMPOSED_ARRAY_ANY)) {
+            composedArrayAsAny = convertPropertyToBooleanAndWriteBack(COMPOSED_ARRAY_ANY)
+        }
+
+        if (additionalProperties.containsKey(GENERATE_PRIMITIVE_TYPE_ALIAS)) {
+            generatePrimitiveTypeAlias = convertPropertyToBooleanAndWriteBack(GENERATE_PRIMITIVE_TYPE_ALIAS)
+        }
     }
 
     /**
@@ -408,19 +524,91 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      * contain any properties. These schemas are set as [String] so they are parsed as a [StringSchema] instead of
      * [ObjectSchema]. This helps to avoid empty data classes which cannot pass Kotlin compilation.
      *
+     * @param name of the schema being checked
      * @param schema to be checked for empty type and properties
      * @since 1.1.0
      */
-    private fun emptyDataClassAsString(schema: Schema<*>?) {
-        if (!allowEmptyDataClasses) {
+    private fun emptyDataClassAsString(name: String?, schema: Schema<*>?) {
+        if (!emptyDataClasses) {
             schema?.let {
                 if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema
                     && (it.type == null || it.type.isEmpty())
                     && (it.properties == null || it.properties.isEmpty())
                 ) {
+                    LOGGER.info("Schema: $name re-typed to \"string\"")
                     it.type = "string"
                 }
             }
+        }
+    }
+
+    /**
+     * Changes array that contains composed schema to array that contains object schema because that will be changed to
+     * [kotlin.Any] later in the generation.
+     *
+     * @param property to be checked for array of composed
+     * @since 1.1.0
+     */
+    private fun composedArrayAsAny(name: String?, property: Schema<*>?) {
+        if (composedArrayAsAny && property is ArraySchema && property.items is ComposedSchema) {
+            LOGGER.info("Schema: $name is array of composed -> changed to array of object")
+            property.items = ObjectSchema()
+        }
+    }
+
+    /**
+     * Sets vendor extensions to the model and it's properties. Extensions added: [markModelAsTypeAlias] and
+     * [escapePropertyBaseNameLiteral].
+     *
+     * @param model to have extensions added
+     * @since 1.1.0
+     */
+    private fun setModelVendorExtensions(model: CodegenModel) {
+        val modelProperties = model.vars +
+                model.allVars +
+                model.optionalVars +
+                model.requiredVars +
+                model.readOnlyVars +
+                model.readWriteVars +
+                model.parentVars
+        markModelAsTypeAlias(model, modelProperties.size)
+        escapePropertyBaseNameLiteral(modelProperties)
+    }
+
+    /**
+     * Marks model as typealias using vendor extension [VENDOR_EXTENSION_IS_ALIAS]. This extension is set in two
+     * cases:
+     * - [emptyDataClasses] is set to false and model has no properties.
+     * - [generatePrimitiveTypeAlias] is set to true and model is alias.
+     *
+     * @param model to be checked set as type alias
+     * @param modelPropertiesCount used in the first case
+     * @since 1.1.0
+     */
+    private fun markModelAsTypeAlias(model: CodegenModel, modelPropertiesCount: Int) {
+        if ((!emptyDataClasses && modelPropertiesCount <= 0) || (model.isAlias && generatePrimitiveTypeAlias)) {
+            LOGGER.info("Model: ${model.name} marked as typealias")
+            model.vendorExtensions[VENDOR_EXTENSION_IS_ALIAS] = true
+            if (model.dataType == null) {
+                model.dataType = model.parent
+            }
+            if (generatePrimitiveTypeAlias) {
+                model.isAlias = false
+            }
+        }
+    }
+
+    /**
+     * Adds vendor extension [VENDOR_EXTENSION_BASE_NAME_LITERAL] which contains escaped base name for use as a string
+     * literal.
+     *
+     * @param modelProperties all properties to have this extension set
+     * @since 1.1.0
+     */
+    private fun escapePropertyBaseNameLiteral(modelProperties: List<CodegenProperty>) {
+        modelProperties.forEach { property ->
+            property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
+                property.baseName.replace("$", "\\$")
         }
     }
 
