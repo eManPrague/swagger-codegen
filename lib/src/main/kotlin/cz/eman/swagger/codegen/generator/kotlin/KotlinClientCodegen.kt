@@ -179,16 +179,17 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      */
     @Suppress("UNCHECKED_CAST")
     override fun postProcessOperationsWithModels(
-        objs: Map<String?, Any?>,
+        objs: MutableMap<String?, Any?>,
         allModels: List<Any?>?
     ): Map<String, Any>? {
         super.postProcessOperationsWithModels(objs, allModels)
         val operations = objs["operations"] as? Map<String, Any>?
         if (operations != null) {
             (operations["operation"] as List<*>?)?.forEach { operation ->
-                if (operation is CodegenOperation && operation.hasConsumes == java.lang.Boolean.TRUE) {
+                if (operation is CodegenOperation && operation.hasConsumes) {
                     if (isMultipartType(operation.consumes)) {
-                        operation.isMultipart = java.lang.Boolean.TRUE
+                        operation.isMultipart = true
+                        objs["isMultipart"] = true
                     }
                 }
             }

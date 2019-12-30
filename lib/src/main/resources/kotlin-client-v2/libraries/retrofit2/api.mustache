@@ -3,6 +3,8 @@ package {{apiPackage}}
 
 import retrofit2.http.*
 import retrofit2.Call
+{{#isMultipart}}import okhttp3.MultipartBody
+{{/isMultipart}}
 {{#generateInfrastructure}}import {{packageName}}.infrastructure.*
 {{/generateInfrastructure}}
 {{#imports}}import {{import}}
