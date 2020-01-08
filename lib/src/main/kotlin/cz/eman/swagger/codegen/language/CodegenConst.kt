@@ -7,6 +7,11 @@ package cz.eman.swagger.codegen.language
 const val DATE_LIBRARY = "dateLibrary"
 const val DATE_LIBRARY_DESCRIPTION = "Option to change Date library to use (default: java8)."
 
+const val REQUEST_DATE_CONVERTER = "requestDateConverter"
+const val REQUEST_DATE_CONVERTER_DESCRIPTION = "JVM-Option. Defines in how to handle date-time objects that are used for a request (as query or parameter)"
+const val REQUEST_DATE_CONVERTER_TO_STRING_DESCRIPTION = "[DEFAULT] Use the 'toString'-method of the date-time object to retrieve the related string representation."
+const val REQUEST_DATE_CONVERTER_TO_JSON_DESCRIPTION = "Date formater option using a json converter."
+
 const val GENERATE_INFRASTRUCTURE_API = "generateInfrastructure"
 const val GENERATE_INFRASTRUCTURE_API_DESCRIPTION = "Option to add infrastructure package"
 
