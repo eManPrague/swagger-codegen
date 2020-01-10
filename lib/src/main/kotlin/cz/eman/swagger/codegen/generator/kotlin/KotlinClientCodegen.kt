@@ -30,14 +30,14 @@ import java.io.File
  */
 open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClientCodegen() {
 
-    private val LOGGER = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
-
     private var emptyDataClasses = false
     private var composedArrayAsAny = true
     private var generatePrimitiveTypeAlias = false
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
     companion object {
+        val logger = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
+
         const val ROOM = "room"
         const val ROOM2 = "room2"
 
@@ -63,7 +63,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
 
     override fun setLibrary(library: String?) {
         super.setLibrary(library)
-        LOGGER.info("Setting library: $library")
+        logger.info("Setting library: $library")
         supportedLibraries.keys.forEach { additionalProperties[it] = it == library }
         initArtifact()
         initTemplates()
@@ -216,17 +216,17 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 1.1.0
      */
     private fun initTemplates() {
-        templateDir = "kotlin-client-v2"
-        embeddedTemplateDir = templateDir
+//        templateDir = "kotlin-client-v2"
+//        embeddedTemplateDir = templateDir
         modelTemplateFiles["model.mustache"] = ".kt"
         modelDocTemplateFiles["model_doc.mustache"] = ".md"
 
         if (library != ROOM && library != ROOM2) {
-            LOGGER.info("Adding API template files")
+            logger.info("Adding API template files")
             apiTemplateFiles["api.mustache"] = ".kt"
             apiDocTemplateFiles["api_doc.mustache"] = ".md"
         } else {
-            LOGGER.info("Removing API template files")
+            logger.info("Removing API template files")
             apiTemplateFiles.clear()
             apiDocTemplateFiles.clear()
         }
@@ -394,7 +394,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
                     && (it.type == null || it.type.isEmpty())
                     && (it.properties == null || it.properties.isEmpty())
                 ) {
-                    LOGGER.info("Schema: $name re-typed to \"string\"")
+                    logger.info("Schema: $name re-typed to \"string\"")
                     it.type = "string"
                 }
             }
@@ -410,7 +410,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun composedArrayAsAny(name: String?, property: Schema<*>?) {
         if (composedArrayAsAny && property is ArraySchema && property.items is ComposedSchema) {
-            LOGGER.info("Schema: $name is array of composed -> changed to array of object")
+            logger.info("Schema: $name is array of composed -> changed to array of object")
             property.items = ObjectSchema()
         }
     }
@@ -446,7 +446,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun markModelAsTypeAlias(model: CodegenModel, modelPropertiesCount: Int) {
         if ((!emptyDataClasses && modelPropertiesCount <= 0) || (model.isAlias && generatePrimitiveTypeAlias)) {
-            LOGGER.info("Model: ${model.name} marked as typealias")
+            logger.info("Model: ${model.name} marked as typealias")
             model.vendorExtensions[VENDOR_EXTENSION_IS_ALIAS] = true
             if (model.dataType == null) {
                 model.dataType = model.parent
