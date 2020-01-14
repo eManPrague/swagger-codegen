@@ -1,11 +1,12 @@
 package cz.eman.swagger.codegen
 
-import io.swagger.codegen.v3.DefaultGenerator
-import io.swagger.codegen.v3.config.CodegenConfigurator
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.openapitools.codegen.DefaultGenerator
+import org.openapitools.codegen.config.CodegenConfigurator
+import org.openapitools.codegen.config.Context
 import java.io.File
 
 /**
@@ -22,11 +23,13 @@ abstract class AbstractSwaggerGenTask : DefaultTask() {
      */
     abstract val configuration: CodegenConfigurator
 
-    //@get:InputFile
-    //val inputFile: File by lazy { project.file(configuration.inputSpec) }
+    /**
+     * Context class that holds settings set using [CodegenConfigurator].
+     */
+    private val context: Context<*> by lazy { configuration.toContext() }
 
     @get:OutputDirectory
-    val outputDir: File by lazy { project.file(configuration.outputDir) }
+    val outputDir: File by lazy { project.file(context.workflowSettings.outputDir) }
 
     /**
      * Guard against deleting the directory being passed.
@@ -44,8 +47,8 @@ abstract class AbstractSwaggerGenTask : DefaultTask() {
         validateDeleteOutputDir(project.rootProject.projectDir)
 
         // If the spec has changed then this file will have have changed.
-        outputDir
-                .deleteRecursively()
+        outputDir.deleteRecursively()
+
         /*
          * Since the generator sets system properties we need to ensure that two tasks don't try
          * to have system properties set in the same JVM.
@@ -53,6 +56,7 @@ abstract class AbstractSwaggerGenTask : DefaultTask() {
          */
         synchronized(this::class) {
             val config = configuration
+            val ctx = context
             // Verbose logging prints thw whole file with converted parameters so do not use this if
             // you do not want to get 100+ thousands of lines. :)
             //config.isVerbose = true
@@ -63,7 +67,7 @@ abstract class AbstractSwaggerGenTask : DefaultTask() {
 
             // Clean up the system environment variables that have been set by the code generator.
             // https://github.com/swagger-api/swagger-codegen/issues/4788
-            config.systemProperties.keys.forEach { System.clearProperty(it) }
+            ctx.workflowSettings.systemProperties.keys.forEach { System.clearProperty(it) }
         }
     }
 }
