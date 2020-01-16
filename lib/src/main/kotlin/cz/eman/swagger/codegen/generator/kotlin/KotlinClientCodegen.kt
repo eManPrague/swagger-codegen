@@ -4,6 +4,7 @@ import cz.eman.swagger.codegen.language.*
 import io.swagger.v3.oas.models.media.*
 import org.openapitools.codegen.*
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -12,9 +13,11 @@ import java.io.File
  * default OpenAPI generator (https://github.com/OpenAPITools/openapi-generator).
  *
  * Supported libraries:
- * - `Retrofit2` - generates api containing retrofit functions and required model classes.
- * - `Room v1` - generated model classes supporting Room up to version 1.1.1.
- * - `Room v2 (androidx)` - generates model classes supporting Room from version 2.0.0.
+ * - `Multiplatform (multiplatform)` - generates api containing multiplatform functions and required model classes.
+ * - `Okhttp (jvm-okhttp)` - generates api containing okhttp functions and required model classes.
+ * - `Retrofit2 (jvm-retrofit2)` - generates api containing retrofit functions and required model classes.
+ * - `Room v1 (room)` - generated model classes supporting Room up to version 1.1.1.
+ * - `Room v2 (room2)` - generates model classes supporting Room from version 2.0.0 (androidx).
  *
  * Additional generator options:
  * - `dateLibrary` - By this property you can set date library used to serialize dates and times.
@@ -36,7 +39,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
     companion object {
-        val logger = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
+        val logger: Logger = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
 
         const val ROOM = "room"
         const val ROOM2 = "room2"
