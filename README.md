@@ -17,7 +17,7 @@ buildscript {
 
     // Kotlin Gradle DSL
     dependencies {
-        classpath("cz.eman.swagger:swagger-codegen:1.1.0")
+        classpath("cz.eman.swagger:swagger-codegen:1.1.1")
     }
 }
 ```

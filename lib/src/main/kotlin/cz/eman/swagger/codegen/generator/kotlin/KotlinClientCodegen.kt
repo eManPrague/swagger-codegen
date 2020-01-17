@@ -4,6 +4,7 @@ import cz.eman.swagger.codegen.language.*
 import io.swagger.v3.oas.models.media.*
 import org.openapitools.codegen.*
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -12,9 +13,11 @@ import java.io.File
  * default OpenAPI generator (https://github.com/OpenAPITools/openapi-generator).
  *
  * Supported libraries:
- * - `Retrofit2` - generates api containing retrofit functions and required model classes.
- * - `Room v1` - generated model classes supporting Room up to version 1.1.1.
- * - `Room v2 (androidx)` - generates model classes supporting Room from version 2.0.0.
+ * - `Multiplatform (multiplatform)` - generates api containing multiplatform functions and required model classes.
+ * - `Okhttp (jvm-okhttp)` - generates api containing okhttp functions and required model classes.
+ * - `Retrofit2 (jvm-retrofit2)` - generates api containing retrofit functions and required model classes.
+ * - `Room v1 (room)` - generated model classes supporting Room up to version 1.1.1.
+ * - `Room v2 (room2)` - generates model classes supporting Room from version 2.0.0 (androidx).
  *
  * Additional generator options:
  * - `dateLibrary` - By this property you can set date library used to serialize dates and times.
@@ -28,36 +31,21 @@ import java.io.File
  * @author eMan s.r.o. (david.sucharda@eman.cz)
  * @since 1.1.0
  */
-open class KotlinClientCodegen : AbstractKotlinCodegen() {
+open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClientCodegen() {
 
-    private val LOGGER = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
-
-    private var dateLib = DateLibrary.JAVA8.value
-    private var collectionType = CollectionType.ARRAY.value
     private var emptyDataClasses = false
     private var composedArrayAsAny = true
     private var generatePrimitiveTypeAlias = false
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
     companion object {
-        const val RETROFIT2 = "retrofit2"
+        val logger: Logger = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
+
         const val ROOM = "room"
         const val ROOM2 = "room2"
 
         const val VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal"
         const val VENDOR_EXTENSION_IS_ALIAS = "x-is-alias"
-    }
-
-    enum class DateLibrary constructor(val value: String) {
-        STRING("string"),
-        THREETENBP("threetenbp"),
-        JAVA8("java8"),
-        MILLIS("millis")
-    }
-
-    enum class CollectionType(val value: String) {
-        ARRAY("array"),
-        LIST("list");
     }
 
     enum class GenerateApiType constructor(val value: String) {
@@ -73,12 +61,12 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         initArtifact()
         initTemplates()
         initSettings()
-        initLibraries()
+        addLibraries()
     }
 
     override fun setLibrary(library: String?) {
         super.setLibrary(library)
-        LOGGER.info("Setting library: $library")
+        logger.info("Setting library: $library")
         supportedLibraries.keys.forEach { additionalProperties[it] = it == library }
         initArtifact()
         initTemplates()
@@ -120,9 +108,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      */
     override fun processOpts() {
         super.processOpts()
-        processOptsDateLib()
         processOptsInfrastructure()
-        processOptsCollectionType()
         processOptsAdditionalSupportingFiles()
         processOptsAdditional()
     }
@@ -186,10 +172,22 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         val operations = objs["operations"] as? Map<String, Any>?
         if (operations != null) {
             (operations["operation"] as List<*>?)?.forEach { operation ->
-                if (operation is CodegenOperation && operation.hasConsumes) {
-                    if (isMultipartType(operation.consumes)) {
-                        operation.isMultipart = true
-                        objs["isMultipart"] = true
+                if (operation is CodegenOperation) {
+                    if (operation.hasConsumes) {
+                        if (isMultipartType(operation.consumes)) {
+                            operation.isMultipart = true
+                            objs["isMultipart"] = true
+                        }
+                    }
+
+                    // modify the data type of binary form parameters to a more friendly type for multiplatform builds
+                    if (MULTIPLATFORM == getLibrary() && operation.allParams != null) {
+                        for (param in operation.allParams) {
+                            if (param.dataFormat != null && param.dataFormat == "binary") {
+                                param.dataType = "io.ktor.client.request.forms.InputProvider"
+                                param.baseType = param.dataType
+                            }
+                        }
                     }
                 }
             }
@@ -209,6 +207,10 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         apiPackage = "$packageName.api"
         modelPackage = "$packageName.model"
         outputFolder = "generated-code" + File.separator + artifactId
+
+        // cliOptions default redefinition need to be updated
+        updateOption(CodegenConstants.ARTIFACT_ID, artifactId)
+        updateOption(CodegenConstants.PACKAGE_NAME, packageName)
     }
 
     /**
@@ -217,17 +219,17 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      * @since 1.1.0
      */
     private fun initTemplates() {
-        templateDir = "kotlin-client-v2"
-        embeddedTemplateDir = templateDir
+//        templateDir = "kotlin-client-v2"
+//        embeddedTemplateDir = templateDir
         modelTemplateFiles["model.mustache"] = ".kt"
         modelDocTemplateFiles["model_doc.mustache"] = ".md"
 
         if (library != ROOM && library != ROOM2) {
-            LOGGER.info("Adding API template files")
+            logger.info("Adding API template files")
             apiTemplateFiles["api.mustache"] = ".kt"
             apiDocTemplateFiles["api_doc.mustache"] = ".md"
         } else {
-            LOGGER.info("Removing API template files")
+            logger.info("Removing API template files")
             apiTemplateFiles.clear()
             apiDocTemplateFiles.clear()
         }
@@ -239,29 +241,10 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      * @since 1.1.0
      */
     private fun initSettings() {
-        initSettingsDateLibrary()
         initSettingsInfrastructure()
-        initSettingsCollectionType()
         initSettingsEmptyDataClass()
         initSettingsComposedArrayAny()
         initSettingsGeneratePrimitiveTypeAlias()
-    }
-
-    /**
-     * Settings defining default date library used. Options are [DateLibrary.THREETENBP], [DateLibrary.STRING],
-     * [DateLibrary.JAVA8] or [DateLibrary.MILLIS]. Default is [DateLibrary.JAVA8].
-     *
-     * @since 1.1.0
-     */
-    private fun initSettingsDateLibrary() {
-        val dateLibrary = CliOption(DATE_LIBRARY, DATE_LIBRARY_DESCRIPTION)
-        val dateOptions = HashMap<String, String>()
-        dateOptions[DateLibrary.THREETENBP.value] = "Threetenbp"
-        dateOptions[DateLibrary.STRING.value] = "String"
-        dateOptions[DateLibrary.JAVA8.value] = "Java 8 native JSR310"
-        dateOptions[DateLibrary.MILLIS.value] = "Date Time as Long"
-        dateLibrary.enum = dateOptions
-        cliOptions.add(dateLibrary)
     }
 
     /**
@@ -277,22 +260,6 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
         infraOptions[GenerateApiType.API.value] = "Generate API"
         infrastructureCli.enum = infraOptions
         cliOptions.add(infrastructureCli)
-    }
-
-    /**
-     * Settings to change collection type that this generator supports. Types used are [CollectionType.ARRAY] and
-     * [CollectionType.LIST]. Default is [CollectionType.ARRAY].
-     *
-     * @since 1.1.0
-     */
-    private fun initSettingsCollectionType() {
-        val collectionTypeCli = CliOption(COLLECTION_TYPE, COLLECTION_TYPE_DESCRIPTION)
-        val collectionOptions: MutableMap<String, String> = java.util.HashMap()
-        collectionOptions[CollectionType.ARRAY.value] = "kotlin.Array"
-        collectionOptions[CollectionType.LIST.value] = "kotlin.collections.List"
-        collectionTypeCli.enum = collectionOptions
-        collectionTypeCli.default = this.collectionType
-        cliOptions.add(collectionTypeCli)
     }
 
     /**
@@ -343,13 +310,11 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
     }
 
     /**
-     * Initializes supported libraries for this generator. Supported libraries are: [RETROFIT2], [ROOM] and [ROOM2].
+     * Adds additional libraries to this generator: [ROOM] and [ROOM2].
      *
-     * @since 1.1.0
+     * @since 1.1.1
      */
-    private fun initLibraries() {
-        supportedLibraries[RETROFIT2] =
-            "[DEFAULT] Platform: Retrofit2 2.6.2. JSON processing: Moshi 1.9.2."
+    private fun addLibraries() {
         supportedLibraries[ROOM] =
             "Platform: Room v1. JSON processing: Moshi 1.9.2."
         supportedLibraries[ROOM2] =
@@ -357,50 +322,14 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
 
         val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
-        libraryOption.default = RETROFIT2
+        libraryOption.default = JVM_RETROFIT2
         cliOptions.add(libraryOption)
-        setLibrary(RETROFIT2)
+        setLibrary(JVM_RETROFIT2)
     }
 
     /**
-     * Processes options for date library. Alters type mapping based on which library is used. For more information
-     * see [initSettingsDateLibrary].
-     *
-     * @since 1.1.0
-     */
-    private fun processOptsDateLib() {
-        if (additionalProperties.containsKey(DATE_LIBRARY)) {
-            dateLib = additionalProperties[DATE_LIBRARY].toString()
-        }
-
-        when (dateLib) {
-            DateLibrary.THREETENBP.value -> {
-                additionalProperties[DateLibrary.THREETENBP.value] = true
-                typeMapping["date"] = "LocalDate"
-                typeMapping["DateTime"] = "LocalDateTime"
-                importMapping["LocalDate"] = "org.threeten.bp.LocalDate"
-                importMapping["LocalDateTime"] = "org.threeten.bp.LocalDateTime"
-                defaultIncludes.add("org.threeten.bp.LocalDateTime")
-            }
-            DateLibrary.STRING.value -> {
-                typeMapping["date-time"] = "kotlin.String"
-                typeMapping["date"] = "kotlin.String"
-                typeMapping["Date"] = "kotlin.String"
-                typeMapping["DateTime"] = "kotlin.String"
-            }
-            DateLibrary.JAVA8.value -> additionalProperties[DateLibrary.JAVA8.value] = true
-            DateLibrary.MILLIS.value -> {
-                typeMapping["date-time"] = "kotlin.Long"
-                typeMapping["date"] = "kotlin.String"
-                typeMapping["Date"] = "kotlin.String"
-                typeMapping["DateTime"] = "kotlin.Long"
-            }
-        }
-    }
-
-    /**
-     * Processes options for infrastructure. Adds supporting file if infrastructure should be generated with the api.
-     * For more information see [initSettingsInfrastructure].
+     * Processes options for infrastructure. Removes all supporting infrastructure files from the generation isf this
+     * option is set to false (do not generate infrastructure). For more information see [initSettingsInfrastructure].
      *
      * @since 1.1.0
      */
@@ -410,44 +339,8 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
             generateInfrastructure = convertPropertyToBooleanAndWriteBack(GENERATE_INFRASTRUCTURE_API)
         }
 
-        if (generateInfrastructure) {
-            val infrastructureFolder = (sourceFolder + File.separator + packageName + File.separator + "infrastructure").replace(".", "/")
-            //supportingFiles.add(SupportingFile("infrastructure/ApiClient.kt.mustache", infrastructureFolder, "ApiClient.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApiAbstractions.kt.mustache", infrastructureFolder, "ApiAbstractions.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApiInfrastructureResponse.kt.mustache", infrastructureFolder, "ApiInfrastructureResponse.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ApplicationDelegates.kt.mustache", infrastructureFolder, "ApplicationDelegates.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/RequestConfig.kt.mustache", infrastructureFolder, "RequestConfig.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/RequestMethod.kt.mustache", infrastructureFolder, "RequestMethod.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/ResponseExtensions.kt.mustache", infrastructureFolder, "ResponseExtensions.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/Serializer.kt.mustache", infrastructureFolder, "Serializer.kt"))
-            supportingFiles.add(SupportingFile("infrastructure/Errors.kt.mustache", infrastructureFolder, "Errors.kt"))
-            if (library == RETROFIT2) {
-                supportingFiles.add(SupportingFile("infrastructure/ByteArrayAdapter.kt.mustache", infrastructureFolder, "ByteArrayAdapter.kt"))
-                supportingFiles.add(SupportingFile("infrastructure/LocalDateAdapter.kt.mustache", infrastructureFolder, "LocalDateAdapter.kt"))
-                supportingFiles.add(SupportingFile("infrastructure/LocalDateTimeAdapter.kt.mustache", infrastructureFolder, "LocalDateTimeAdapter.kt"))
-                supportingFiles.add(SupportingFile("infrastructure/UUIDAdapter.kt.mustache", infrastructureFolder, "UUIDAdapter.kt"))
-                if (getSerializationLibrary() == SERIALIZATION_LIBRARY_TYPE.gson) {
-                    supportingFiles.add(SupportingFile("infrastructure/DateAdapter.kt.mustache", infrastructureFolder, "DateAdapter.kt"))
-                }
-            }
-        }
-    }
-
-    /**
-     * Processes options for collection type. Changes mapping based on which collection is selected. For more
-     * information see [initSettingsCollectionType].
-     *
-     * @since 1.1.0
-     */
-    private fun processOptsCollectionType() {
-        if (additionalProperties.containsKey(COLLECTION_TYPE)) {
-            collectionType = additionalProperties[COLLECTION_TYPE].toString()
-        }
-
-        if (CollectionType.LIST.value == collectionType) {
-            typeMapping["array"] = "kotlin.collections.List"
-            typeMapping["list"] = "kotlin.collections.List"
-            additionalProperties["isList"] = true
+        if (!generateInfrastructure) {
+            supportingFiles.clear()
         }
     }
 
@@ -504,7 +397,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
                     && (it.type == null || it.type.isEmpty())
                     && (it.properties == null || it.properties.isEmpty())
                 ) {
-                    LOGGER.info("Schema: $name re-typed to \"string\"")
+                    logger.info("Schema: $name re-typed to \"string\"")
                     it.type = "string"
                 }
             }
@@ -520,7 +413,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      */
     private fun composedArrayAsAny(name: String?, property: Schema<*>?) {
         if (composedArrayAsAny && property is ArraySchema && property.items is ComposedSchema) {
-            LOGGER.info("Schema: $name is array of composed -> changed to array of object")
+            logger.info("Schema: $name is array of composed -> changed to array of object")
             property.items = ObjectSchema()
         }
     }
@@ -556,7 +449,7 @@ open class KotlinClientCodegen : AbstractKotlinCodegen() {
      */
     private fun markModelAsTypeAlias(model: CodegenModel, modelPropertiesCount: Int) {
         if ((!emptyDataClasses && modelPropertiesCount <= 0) || (model.isAlias && generatePrimitiveTypeAlias)) {
-            LOGGER.info("Model: ${model.name} marked as typealias")
+            logger.info("Model: ${model.name} marked as typealias")
             model.vendorExtensions[VENDOR_EXTENSION_IS_ALIAS] = true
             if (model.dataType == null) {
                 model.dataType = model.parent
