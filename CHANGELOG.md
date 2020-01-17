@@ -1,9 +1,7 @@
 Change Log
 ==========
 
-## 1.1.1 (TBD)
-
-## 1.1.0 (TBD)
+## 2.0.0 (TBD)
 - Migrated from Swagger to OpenApi generator (https://github.com/OpenAPITools/openapi-generator).
 - Merged Retrofit and Room generator together.
 - Empty data class is defined as a String type alias.
