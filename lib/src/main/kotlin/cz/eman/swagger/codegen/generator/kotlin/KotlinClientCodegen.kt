@@ -29,7 +29,7 @@ import java.io.File
  *
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  * @author eMan s.r.o. (david.sucharda@eman.cz)
- * @since 1.1.0
+ * @since 2.0.0
  */
 open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClientCodegen() {
 
@@ -89,12 +89,13 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     override fun toModelName(name: String): String {
-        val modelName = super.toModelName(name)
+        return super.toModelName(name)
+        /*val modelName = super.toModelName(name)
         return if (modelName.startsWith("kotlin.") || modelName.startsWith("java.")) {
             modelName
         } else {
             "$modelNamePrefix$modelName$modelNameSuffix"
-        }
+        }*/
     }
 
     override fun toApiName(name: String?): String {
@@ -104,7 +105,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Processes and adds generator options.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     override fun processOpts() {
         super.processOpts()
@@ -117,7 +118,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * Modifies schema before the actual [fromModel] function is called. Modifies model based on [emptyDataClasses] and
      * [composedArrayAsAny] options.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     override fun fromModel(name: String?, schema: Schema<*>?): CodegenModel {
         emptyDataClassAsString(name, schema)
@@ -128,7 +129,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Enum number names are unified with Java code generation.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     override fun toEnumVarName(value: String?, datatype: String?): String {
         var name = super.toEnumVarName(value, datatype)
@@ -144,7 +145,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Post process models and adds vendor extensions.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     override fun postProcessModels(objs: Map<String?, Any?>): Map<String?, Any?>? {
         val objects = super.postProcessModels(objs)
@@ -161,7 +162,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Post process operations with models to check if the operation is multipart ot not.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     @Suppress("UNCHECKED_CAST")
     override fun postProcessOperationsWithModels(
@@ -198,7 +199,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Initializes artifact settings such as id, output folder or package name.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun initArtifact() {
         val libraryArtifact = if (library != null) "-$library" else ""
@@ -216,7 +217,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Initializes template files for generator.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun initTemplates() {
 //        templateDir = "kotlin-client-v2"
@@ -238,7 +239,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Adds all settings options to this generator.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun initSettings() {
         initSettingsInfrastructure()
@@ -251,7 +252,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * Settings used to generate api only or api with infrastructure. Options are [GenerateApiType.INFRASTRUCTURE] or
      * [GenerateApiType.API]. Default is [GenerateApiType.API].
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun initSettingsInfrastructure() {
         val infrastructureCli = CliOption(GENERATE_INFRASTRUCTURE_API, GENERATE_INFRASTRUCTURE_API_DESCRIPTION)
@@ -266,7 +267,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * Settings to allow empty data classes. These are not allowed by default because they do not pass
      * kotlin compile. All empty data classes are re-typed to String.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun initSettingsEmptyDataClass() {
         cliOptions.add(
@@ -281,7 +282,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Settings to cast array of composed schema (Array<OneOf...>) to array of kotlin.Any (Array<kotlin.Any).
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun initSettingsComposedArrayAny() {
         cliOptions.add(
@@ -297,7 +298,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * Settings to generate type aliases for primitives. Default codegen does not generate aliases to primitives and
      * instead it uses the primitives. Viz: https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator/src/main/java/org/openapitools/codegen/DefaultGenerator.java#L496.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun initSettingsGeneratePrimitiveTypeAlias() {
         cliOptions.add(
@@ -312,7 +313,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Adds additional libraries to this generator: [ROOM] and [ROOM2].
      *
-     * @since 1.1.1
+     * @since 2.0.0
      */
     private fun addLibraries() {
         supportedLibraries[ROOM] =
@@ -331,7 +332,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * Processes options for infrastructure. Removes all supporting infrastructure files from the generation isf this
      * option is set to false (do not generate infrastructure). For more information see [initSettingsInfrastructure].
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun processOptsInfrastructure() {
         var generateInfrastructure = false
@@ -347,7 +348,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     /**
      * Adds additional supporting files like Readme, build.gradle or settings.gradle.
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun processOptsAdditionalSupportingFiles() {
         supportingFiles.add(SupportingFile("README.mustache", "", "README.md"))
@@ -361,7 +362,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * - Composed array as any: transforms array of composed to array or kotlin.Any. For more information see [initSettingsComposedArrayAny].
      * - Generate primitive type alias: generates alias for primitive objects. For more information see [initSettingsGeneratePrimitiveTypeAlias].
      *
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun processOptsAdditional() {
         if (additionalProperties.containsKey(EMPTY_DATA_CLASS)) {
@@ -388,7 +389,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      *
      * @param name of the schema being checked
      * @param schema to be checked for empty type and properties
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun emptyDataClassAsString(name: String?, schema: Schema<*>?) {
         if (!emptyDataClasses) {
@@ -409,7 +410,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * [kotlin.Any] later in the generation.
      *
      * @param property to be checked for array of composed
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun composedArrayAsAny(name: String?, property: Schema<*>?) {
         if (composedArrayAsAny && property is ArraySchema && property.items is ComposedSchema) {
@@ -423,7 +424,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * [escapePropertyBaseNameLiteral].
      *
      * @param model to have extensions added
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun setModelVendorExtensions(model: CodegenModel) {
         val modelProperties = model.vars +
@@ -445,7 +446,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      *
      * @param model to be checked set as type alias
      * @param modelPropertiesCount used in the first case
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun markModelAsTypeAlias(model: CodegenModel, modelPropertiesCount: Int) {
         if ((!emptyDataClasses && modelPropertiesCount <= 0) || (model.isAlias && generatePrimitiveTypeAlias)) {
@@ -465,7 +466,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * literal.
      *
      * @param modelProperties all properties to have this extension set
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun escapePropertyBaseNameLiteral(modelProperties: List<CodegenProperty>) {
         modelProperties.forEach { property ->
@@ -479,7 +480,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      *
      * @param consumes operation consumes list
      * @return true if multipart
-     * @since 1.1.0
+     * @since 2.0.0
      */
     private fun isMultipartType(consumes: List<Map<String, String>>): Boolean {
         val firstType = consumes[0]
