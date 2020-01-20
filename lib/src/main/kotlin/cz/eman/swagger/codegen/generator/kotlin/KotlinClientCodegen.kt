@@ -1,6 +1,9 @@
 package cz.eman.swagger.codegen.generator.kotlin
 
+import com.google.common.collect.ImmutableMap
+import com.samskivert.mustache.Mustache
 import cz.eman.swagger.codegen.language.*
+import cz.eman.swagger.codegen.templating.mustache.RemoveMinusTextFromNameLambda
 import io.swagger.v3.oas.models.media.*
 import org.openapitools.codegen.*
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
@@ -26,6 +29,7 @@ import java.io.File
  * - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
  * - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
  * - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
+ * - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
  *
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  * @author eMan s.r.o. (david.sucharda@eman.cz)
@@ -53,6 +57,10 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         API("api")
     }
 
+    enum class HeadersCommands constructor(val value: String) {
+        REMOVE_MINUS_WORD_FROM_PROPERTY(REMOVE_MINUS_TEXT_FROM_HEADER)
+    }
+
     /**
      * Constructs an instance of `KotlinClientCodegen`.
      */
@@ -61,7 +69,15 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         initArtifact()
         initTemplates()
         initSettings()
+        initHeaders()
         addLibraries()
+    }
+
+    override fun addMustacheLambdas(): ImmutableMap.Builder<String, Mustache.Lambda> {
+        val lambdas = super.addMustacheLambdas()
+        lambdas.put(RemoveMinusTextFromNameLambda.LAMBDA_NAME, RemoveMinusTextFromNameLambda(this))
+
+        return lambdas
     }
 
     override fun setLibrary(library: String?) {
@@ -86,16 +102,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
 
     override fun toModelFilename(name: String): String {
         return toModelName(name)
-    }
-
-    override fun toModelName(name: String): String {
-        return super.toModelName(name)
-        /*val modelName = super.toModelName(name)
-        return if (modelName.startsWith("kotlin.") || modelName.startsWith("java.")) {
-            modelName
-        } else {
-            "$modelNamePrefix$modelName$modelNameSuffix"
-        }*/
     }
 
     override fun toApiName(name: String?): String {
@@ -166,8 +172,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     @Suppress("UNCHECKED_CAST")
     override fun postProcessOperationsWithModels(
-        objs: MutableMap<String?, Any?>,
-        allModels: List<Any?>?
+            objs: MutableMap<String?, Any?>,
+            allModels: List<Any?>?
     ): Map<String, Any>? {
         super.postProcessOperationsWithModels(objs, allModels)
         val operations = objs["operations"] as? Map<String, Any>?
@@ -264,6 +270,19 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
+     * Adds all headers options to this generator
+     *
+     * @since 2.0.0
+     */
+    private fun initHeaders() {
+        val headersCli = CliOption(HEADER_CLI, HEADER_CLI_DESCRIPTION)
+        val headersOptions = HashMap<String, String>()
+        headersOptions[HeadersCommands.REMOVE_MINUS_WORD_FROM_PROPERTY.value] = REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
+
+        cliOptions.add(headersCli)
+    }
+
+    /**
      * Settings to allow empty data classes. These are not allowed by default because they do not pass
      * kotlin compile. All empty data classes are re-typed to String.
      *
@@ -271,11 +290,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsEmptyDataClass() {
         cliOptions.add(
-            CliOption.newBoolean(
-                EMPTY_DATA_CLASS,
-                EMPTY_DATA_CLASS_DESCRIPTION,
-                false
-            )
+                CliOption.newBoolean(
+                        EMPTY_DATA_CLASS,
+                        EMPTY_DATA_CLASS_DESCRIPTION,
+                        false
+                )
         )
     }
 
@@ -286,11 +305,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsComposedArrayAny() {
         cliOptions.add(
-            CliOption.newBoolean(
-                COMPOSED_ARRAY_ANY,
-                COMPOSED_ARRAY_ANY_DESCRIPTION,
-                true
-            )
+                CliOption.newBoolean(
+                        COMPOSED_ARRAY_ANY,
+                        COMPOSED_ARRAY_ANY_DESCRIPTION,
+                        true
+                )
         )
     }
 
@@ -302,11 +321,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsGeneratePrimitiveTypeAlias() {
         cliOptions.add(
-            CliOption.newBoolean(
-                GENERATE_PRIMITIVE_TYPE_ALIAS,
-                GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
-                false
-            )
+                CliOption.newBoolean(
+                        GENERATE_PRIMITIVE_TYPE_ALIAS,
+                        GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
+                        false
+                )
         )
     }
 
@@ -317,9 +336,9 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun addLibraries() {
         supportedLibraries[ROOM] =
-            "Platform: Room v1. JSON processing: Moshi 1.9.2."
+                "Platform: Room v1. JSON processing: Moshi 1.9.2."
         supportedLibraries[ROOM2] =
-            "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
+                "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
 
         val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
@@ -395,8 +414,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         if (!emptyDataClasses) {
             schema?.let {
                 if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema
-                    && (it.type == null || it.type.isEmpty())
-                    && (it.properties == null || it.properties.isEmpty())
+                        && (it.type == null || it.type.isEmpty())
+                        && (it.properties == null || it.properties.isEmpty())
                 ) {
                     logger.info("Schema: $name re-typed to \"string\"")
                     it.type = "string"
@@ -471,7 +490,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun escapePropertyBaseNameLiteral(modelProperties: List<CodegenProperty>) {
         modelProperties.forEach { property ->
             property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
-                property.baseName.replace("$", "\\$")
+                    property.baseName.replace("$", "\\$")
         }
     }
 

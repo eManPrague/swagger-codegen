@@ -2,6 +2,10 @@ Change Log
 ==========
 ## 2.0.0-TBD (TBD)
 
+### Added
+- Introduced a new labda `RemoveMinusTextFromNameLambda` (`{{#lambda.removeMinusText}}{{paramName}}{{/lambda.removeMinusText}}`) which removes word *minus* in a fragment if it's in it.
+- New property to remove `minus` word from the header's property name: `additionalProperties["removeMinusTextInHeaderProperty"] = true`. By default `false` will be used.
+
 ### Fixed
 - The `modelNameSuffix` has been added twice to generated code. It was caused by migration to OpenApi (this bug has been fixed in OpenApi, so we removed our fix.)
 
