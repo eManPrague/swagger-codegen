@@ -1,5 +1,9 @@
 Change Log
 ==========
+## 2.0.0-TBD (TBD)
+
+### Fixed
+- The `modelNameSuffix` has been added twice to generated code. It was caused by migration to OpenApi (this bug has been fixed in OpenApi, so we removed our fix.)
 
 ## 2.0.0-alpha01 (2020-01-17)
 - Migrated from Swagger to OpenApi generator (https://github.com/OpenAPITools/openapi-generator).

@@ -2,7 +2,7 @@ package cz.eman.swagger.codegen.language
 
 /**
  * @author eMan s.r.o. (david.sucharda@eman.cz)
- * @since 1.1.0
+ * @since 2.0.0
  */
 const val DATE_LIBRARY = "dateLibrary"
 const val DATE_LIBRARY_DESCRIPTION = "Option to change Date library to use (default: java8)."
