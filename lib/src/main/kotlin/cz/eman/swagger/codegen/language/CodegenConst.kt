@@ -27,3 +27,8 @@ const val COMPOSED_ARRAY_ANY_DESCRIPTION =
 
 const val GENERATE_PRIMITIVE_TYPE_ALIAS = "generatePrimitiveTypeAlias"
 const val GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION = "Option to generate typealias for primitives."
+
+const val HEADER_CLI = "headerCliOptions"
+const val HEADER_CLI_DESCRIPTION = "Options to generate Header"
+const val REMOVE_MINUS_TEXT_FROM_HEADER = "removeMinusTextInHeaderProperty"
+const val REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION = "Remove minus text from header's property name if it is present."

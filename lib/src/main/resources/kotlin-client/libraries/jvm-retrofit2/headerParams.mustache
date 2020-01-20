@@ -1,0 +1,1 @@
+{{#isHeaderParam}}@Header("{{baseName}}") {{#removeMinusTextInHeaderProperty}}{{#lambda.removeMinusText}}{{paramName}}{{/lambda.removeMinusText}}{{/removeMinusTextInHeaderProperty}}{{^removeMinusTextInHeaderProperty}}{{paramName}}{{/removeMinusTextInHeaderProperty}}: {{{dataType}}}{{/isHeaderParam}}
