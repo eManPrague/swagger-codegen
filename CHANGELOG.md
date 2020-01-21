@@ -1,6 +1,6 @@
 Change Log
 ==========
-## 2.0.0-TBD (TBD)
+## 2.0.0-alpha02 (2019-01-21)
 
 ### Added
 - Introduced a new labda `RemoveMinusTextFromNameLambda` (`{{#lambda.removeMinusText}}{{paramName}}{{/lambda.removeMinusText}}`) which removes word *minus* in a fragment if it's in it.

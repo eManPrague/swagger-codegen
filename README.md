@@ -1,6 +1,6 @@
 # OpenApi 3 Codegen / Swagger
 
-[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=1.1.0) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/1.1.0/link)
+[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=2.0.0-alpha02) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/2.0.0-alpha02/link)
 
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
@@ -17,7 +17,7 @@ buildscript {
 
     // Kotlin Gradle DSL
     dependencies {
-        classpath("cz.eman.swagger:swagger-codegen:2.0.0-alpha01")
+        classpath("cz.eman.swagger:swagger-codegen:2.0.0-alpha02")
     }
 }
 ```
@@ -33,6 +33,7 @@ plugins {
 #### 3. Configure Swagger Codegen plugin
 
 ##### 3.1 Retrofit - Kotlin
+Basic configuration in Kotlin Gradle DSL (use an additional properties what you need for your project):
 ```Kotlin
 swagger {
     setInputSpec("${project.projectDir.absolutePath}/data/api.yaml")
@@ -50,6 +51,7 @@ swagger {
     additionalProperties["emptyDataClasses"] = false
     additionalProperties["generateAliasAsModel"] = true
     additionalProperties["composedArrayAsAny"] = true
+    additionalProperties["removeMinusTextInHeaderProperty"] = true
     additionalProperties["generatePrimitiveTypeAlias"] = false
     additionalProperties["apiPackage"] = "cz.mypackage.service"
     additionalProperties["modelPackage"] = "cz.mypackage.model"
@@ -75,6 +77,7 @@ swagger {
     - `apiNameSuffix` - By this property you can define suffix to all api classes. E.g. `UserService`, ...
     - `apiPackage` - By this property you can define a package name for your service classes
     - `modelPackage` - By this property you can define a package name for your model classes
+    - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
 
 Other options can be found [here](https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-maven-plugin/README.md).
 
