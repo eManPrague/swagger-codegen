@@ -5,7 +5,7 @@ private object Versions {
     const val dokka = "0.10.0"
     const val bintrayGradle = "1.8.4"
 
-    const val openApiCodegen = "4.2.3-SNAPSHOT"
+    const val openApiCodegen = "4.2.3"
 
     const val junit = "4.12"
     const val kotlinTest = "3.3.0"
