@@ -5,6 +5,7 @@ Change Log
 
 ### Changed
 - OpenApi generator updated to release [v4.2.3](https://github.com/OpenAPITools/openapi-generator/releases/tag/v4.2.3)
+- Enable multiple configuration files in one swagger task.
 
 ## 2.0.0-alpha02 (2019-01-21)
 

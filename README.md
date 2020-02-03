@@ -35,11 +35,11 @@ plugins {
 ##### 3.1 Retrofit - Kotlin
 Basic configuration in Kotlin Gradle DSL (use an additional properties what you need for your project):
 ```Kotlin
-swagger {
-    setInputSpec("${project.projectDir.absolutePath}/data/api.yaml")
-    setOutputDir("${project.buildDir.absolutePath}/swagger")
-    setLibrary("retrofit2")
-    setGeneratorName("cz.eman.swagger.codegen.generator.kotlin.KotlinRetrofitCodegen")
+configure<SwaggerCodeGenConfig> {
+    sourcePath = "${project.projectDir.absolutePath}/swagger"
+    outputPath = "${buildDir.absolutePath}/swagger"
+    setLibrary("jvm-retrofit2")
+    setGeneratorName("cz.eman.swagger.codegen.generator.kotlin.KotlinClientCodegen")
 
     val additionalProperties = HashMap<String, Any>()
     additionalProperties["templateEngine"] = "mustache"
@@ -56,13 +56,20 @@ swagger {
     additionalProperties["apiPackage"] = "cz.mypackage.service"
     additionalProperties["modelPackage"] = "cz.mypackage.model"
     setAdditionalProperties(additionalProperties)
+
+    configs = listOf(
+        // Input file, Output directory, Library
+        SwaggerCodeGenTaskConfig("first.yaml", "first", "jvm-retrofit2"),
+        SwaggerCodeGenTaskConfig("second.yaml", "second", "room2")
+    )
 }
 
 ```
-- `inputSpec` - specify OpenAPI yaml file
-- `outputDir` - specify output directory
+- `sourcePath` - specify folder where OpenAPI yaml files are saved
+- `outputPath` - specify output directory
 - `setLibrary` - sets library to generate. Can be either "retrofit2" or "room". Default is "retrofit2".
 - `generatorName` - name or class of supported generator
+- `configs` - specify input files, output directory and library
 - AdditionalProperties:
     - `templateEngine` - Currently this generator is supporting only `mustache`. Support of `handlebars` is in a progress. 
     - `dateLibrary` - By this property you can set date library used to serialize dates and times.
