@@ -23,20 +23,22 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
 
         project.afterEvaluate {
             if (configsExt.autoHook) {
-                configsExt.configs.forEach {
-                    project.getTasksByName("compileJava", false)
-                        .first()
-                        .dependsOn(createGenerator(project, "java", configsExt, it))
+                val compileKotlinTask = project.getTasksByName("compileJava", false).first()
+                configsExt.configs.forEach { taskConfig ->
+                    createGenerator(project, "java", configsExt, taskConfig)?.let { task ->
+                        compileKotlinTask.dependsOn(task)
+                    }
                 }
             }
         }
 
         project.afterEvaluate {
             if (configsExt.autoHook) {
-                configsExt.configs.forEach {
-                    project.getTasksByName("compileKotlin", false)
-                        .first()
-                        .dependsOn(createGenerator(project, "kotlin", configsExt, it))
+                val compileKotlinTask = project.getTasksByName("compileKotlin", false).first()
+                configsExt.configs.forEach { taskConfig ->
+                    createGenerator(project, "kotlin", configsExt, taskConfig)?.let { task ->
+                        compileKotlinTask.dependsOn(task)
+                    }
                 }
             }
         }
@@ -46,20 +48,38 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
      * Creates a generator based on global config and task config.
      *
      * @param project which is running the generator
-     * @param language used in the generator (this is only to distinguish gradle tasks from each other)
+     * @param language project language (this is only to distinguish gradle tasks from each other)
      * @param config global config which is a child of [SwaggerCodeGenConfig]
      * @param taskConfig specific task config which allows multiple apis to be generated
+     * @return [Task] if it was created or null
      */
     private fun createGenerator(
         project: Project,
         language: String,
         config: SwaggerCodeGenConfig,
         taskConfig: SwaggerCodeGenTaskConfig
-    ): Task {
-        val taskName = "swagger-${language}-${taskConfig.outputFolderName}"
+    ): Task? {
+        val taskName = buildTaskName(language, taskConfig.outputFolderName)
 
-        return project.tasks.register(taskName, SwaggerCodeGenTask::class.java) {
-            it.configuration = config.fromTask(taskConfig)
-        }.get()
+        return if (project.tasks.findByName(taskName) == null) {
+            project.tasks.register(taskName, SwaggerCodeGenTask::class.java) {
+                it.configuration = config.fromTask(taskConfig)
+            }.get()
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Builds task name based on parameters. Task name format is "swagger-[language]-[taskOutputFolder]".
+     *
+     * @param language project language (this is only to distinguish gradle tasks from each other)
+     * @param taskOutputFolder output folder for this task (optional)
+     * @return [String] with task name
+     */
+    private fun buildTaskName(language: String, taskOutputFolder: String?) = buildString {
+        append("swagger")
+        append("-$language")
+        taskOutputFolder?.let { append("-$it") }
     }
 }

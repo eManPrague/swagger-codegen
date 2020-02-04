@@ -41,26 +41,28 @@ configure<SwaggerCodeGenConfig> {
     setLibrary("jvm-retrofit2")
     setGeneratorName("cz.eman.swagger.codegen.generator.kotlin.KotlinClientCodegen")
 
-    val additionalProperties = HashMap<String, Any>()
-    additionalProperties["templateEngine"] = "mustache"
-    additionalProperties["dateLibrary"] = "millis"
-    additionalProperties["enumPropertyNaming"] = "UPPERCASE"
-    additionalProperties["modelNameSuffix"] = "Dto"
-    additionalProperties["apiNameSuffix"] = "Service"
-    additionalProperties["generateInfrastructure"] = false
-    additionalProperties["emptyDataClasses"] = false
-    additionalProperties["generateAliasAsModel"] = true
-    additionalProperties["composedArrayAsAny"] = true
-    additionalProperties["removeMinusTextInHeaderProperty"] = true
-    additionalProperties["generatePrimitiveTypeAlias"] = false
-    additionalProperties["apiPackage"] = "cz.mypackage.service"
-    additionalProperties["modelPackage"] = "cz.mypackage.model"
-    setAdditionalProperties(additionalProperties)
+    setAdditionalProperties(
+        mutableMapOf(
+            "templateEngine" to "mustache",
+            "dateLibrary" to "millis",
+            "enumPropertyNaming" to "UPPERCASE",
+            "modelNameSuffix" to "Dto",
+            "apiNameSuffix" to "Service",
+            "generateInfrastructure" to false,
+            "emptyDataClasses" to false,
+            "generateAliasAsModel" to true,
+            "composedArrayAsAny" to true,
+            "removeMinusTextInHeaderProperty" to true,
+            "generatePrimitiveTypeAlias" to false,
+            "apiPackage" to "cz.mypackage.service",
+            "modelPackage" to "cz.mypackage.model"
+        )
+    )
 
     configs = listOf(
-        // Input file, Output directory, Library
-        SwaggerCodeGenTaskConfig("first.yaml", "first", "jvm-retrofit2"),
-        SwaggerCodeGenTaskConfig("second.yaml", "second", "room2")
+        // Input file, Output directory, Library, Additional Properties
+        SwaggerCodeGenTaskConfig("first.yaml", "first", "jvm-retrofit2", mapOf("apiPackage" to "cz.mypackage.first.service")),
+        SwaggerCodeGenTaskConfig("second.yaml", "second", "room2", mapOf("apiPackage" to "cz.mypackage.second.service"))
     )
 }
 
