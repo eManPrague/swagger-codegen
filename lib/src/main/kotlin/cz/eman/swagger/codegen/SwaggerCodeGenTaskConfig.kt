@@ -12,4 +12,9 @@ package cz.eman.swagger.codegen
  * @since 2.0.0
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  */
-data class SwaggerCodeGenTaskConfig(var inputFileName: String, var outputFolderName: String, var library: String?)
+data class SwaggerCodeGenTaskConfig(
+    var inputFileName: String,
+    var outputFolderName: String,
+    var library: String?,
+    var additionalProperties: Map<String, Any>?
+)

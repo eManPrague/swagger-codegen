@@ -26,10 +26,11 @@ open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
     var outputPath = "./"
     var configs = listOf<SwaggerCodeGenTaskConfig>()
     var autoHook = true
+    private var additionalPropertiesCopy: MutableMap<String, Any> = HashMap()
 
     override fun toContext(): Context<*> {
-        setInputSpec("$sourcePath/${currentTaskConfig.inputFileName}")
-        setOutputDir("$outputPath/${currentTaskConfig.outputFolderName}")
+        setWorkflowVariables()
+        mergeAdditionalProperties()
         currentTaskConfig.library?.let { setLibrary(it) }
         return super.toContext()
     }
@@ -49,4 +50,39 @@ open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
         (clone() as SwaggerCodeGenConfig).apply {
             currentTaskConfig = taskConfig
         }
+
+    /**
+     * Sets workflow variables to the generator. Variables set are [setInputSpec] and [setOutputDir].
+     */
+    private fun setWorkflowVariables() {
+        setInputSpec("$sourcePath/${currentTaskConfig.inputFileName}")
+        setOutputDir("$outputPath/${currentTaskConfig.outputFolderName}")
+    }
+
+    /**
+     * Merges additional properties of this config and current task config. Uses copy of [additionalProperties] (since
+     * they are private). Every time value is added it is first deleted to make sure previous settings is not kept
+     * instead of the current one.
+     */
+    private fun mergeAdditionalProperties() {
+        currentTaskConfig.additionalProperties?.forEach { (key, value) ->
+            additionalPropertiesCopy.remove(key)
+            additionalPropertiesCopy[key] = value
+        }
+        setAdditionalProperties(additionalPropertiesCopy)
+    }
+
+    /**
+     * Keeps a copy of [additionalProperties] so this config is able to modify them at will.
+     *
+     * @param additionalProperties to be set to this config
+     * @return [CodegenConfigurator] (this)
+     */
+    override fun setAdditionalProperties(additionalProperties: MutableMap<String, Any>?): CodegenConfigurator {
+        additionalProperties?.toMap()?.run {
+            additionalPropertiesCopy.clear()
+            additionalPropertiesCopy.putAll(this)
+        }
+        return super.setAdditionalProperties(additionalProperties)
+    }
 }
