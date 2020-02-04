@@ -52,11 +52,24 @@ open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
         }
 
     /**
-     * Sets workflow variables to the generator. Variables set are [setInputSpec] and [setOutputDir].
+     * Sets workflow variables to the generator. Variables set are [setInputSpec] and [setOutputDir]. Variables are
+     * generated using [buildPath].
      */
     private fun setWorkflowVariables() {
-        setInputSpec("$sourcePath/${currentTaskConfig.inputFileName}")
-        setOutputDir("$outputPath/${currentTaskConfig.outputFolderName}")
+        setInputSpec(buildPath(sourcePath, currentTaskConfig.inputFileName))
+        setOutputDir(buildPath(outputPath, currentTaskConfig.outputFolderName))
+    }
+
+    /**
+     * Builds path based on parameters. Path format is "[configPath]/[taskConfigPath]".
+     *
+     * @param configPath general config path
+     * @param taskConfigPath task config path (optional)
+     * @return [String] with path
+     */
+    private fun buildPath(configPath: String, taskConfigPath: String?) = buildString {
+        append(configPath)
+        taskConfigPath?.let { append("/$it") }
     }
 
     /**

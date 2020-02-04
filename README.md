@@ -60,7 +60,7 @@ configure<SwaggerCodeGenConfig> {
     )
 
     configs = listOf(
-        // Input file, Output directory, Library
+        // Input file, Output directory, Library, Additional Properties
         SwaggerCodeGenTaskConfig("first.yaml", "first", "jvm-retrofit2", mapOf("apiPackage" to "cz.mypackage.first.service")),
         SwaggerCodeGenTaskConfig("second.yaml", "second", "room2", mapOf("apiPackage" to "cz.mypackage.second.service"))
     )
