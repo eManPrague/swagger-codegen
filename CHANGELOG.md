@@ -1,12 +1,12 @@
 Change Log
 ==========
 
-## 2.0.0-TBD (TBD)
+## 2.0.0-rc01 (2019-02-05)
 
 ### Changed
 - OpenApi generator updated to release [v4.2.3](https://github.com/OpenAPITools/openapi-generator/releases/tag/v4.2.3)
-- Enable multiple configuration files in one swagger task.
-- Tasks now contain additionalProperties setting.
+- Enable multiple configuration files in one swagger task (see README.md).
+- Tasks now contain additionalProperties setting (see README.md).
 - Task configs can have all values null.
 - Generator is safe with null parameters.
 
