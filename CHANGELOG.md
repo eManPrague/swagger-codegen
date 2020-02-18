@@ -1,12 +1,20 @@
 Change Log
 ==========
 
-## 2.0.0-rc02 (TBD)
+## 2.0.0-rc03 (2020-02-18)
+
+### Fixed
+- Fix of critical bug when `removeOperationParams` is used, then api function is not generated it correctly.
+
+## 2.0.0-rc02 (2020-02-18)
 
 ### Added
-- Option to remove specific parameters from operations.
+- Option to remove specific parameters from operations:
+```
+"removeOperationParams" to arrayOf("X-Access-Token", "Accept-Language", ...)
+```
 
-## 2.0.0-rc01 (2019-02-05)
+## 2.0.0-rc01 (2020-02-05)
 
 ### Changed
 - OpenApi generator updated to release [v4.2.3](https://github.com/OpenAPITools/openapi-generator/releases/tag/v4.2.3)
