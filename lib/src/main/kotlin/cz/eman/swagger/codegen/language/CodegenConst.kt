@@ -28,6 +28,9 @@ const val COMPOSED_ARRAY_ANY_DESCRIPTION =
 const val GENERATE_PRIMITIVE_TYPE_ALIAS = "generatePrimitiveTypeAlias"
 const val GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION = "Option to generate typealias for primitives."
 
+const val REMOVE_OPERATION_PARAMS = "removeOperationParams"
+const val REMOVE_OPERATION_PARAMS_DESCRIPTION = "Option to remove specific parameters from operation. Uses base name to filter the parameters."
+
 const val HEADER_CLI = "headerCliOptions"
 const val HEADER_CLI_DESCRIPTION = "Options to generate Header"
 const val REMOVE_MINUS_TEXT_FROM_HEADER = "removeMinusTextInHeaderProperty"

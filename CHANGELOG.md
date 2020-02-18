@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+## 2.0.0-rc02 (TBD)
+
+### Added
+- Option to remove specific parameters from operations.
+
 ## 2.0.0-rc01 (2019-02-05)
 
 ### Changed
