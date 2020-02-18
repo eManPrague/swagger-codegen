@@ -56,6 +56,7 @@ configure<SwaggerCodeGenConfig> {
             "generatePrimitiveTypeAlias" to false,
             "apiPackage" to "cz.mypackage.service",
             "modelPackage" to "cz.mypackage.model"
+            "removeOperationParams" to arrayOf("X-Access-Token", "Accept-Language", ...)
         )
     )
 
@@ -87,6 +88,7 @@ configure<SwaggerCodeGenConfig> {
     - `apiPackage` - By this property you can define a package name for your service classes
     - `modelPackage` - By this property you can define a package name for your model classes
     - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
+    - `removeOperationParams` - By this property you can remove specific parameters from API operations.
 
 Other options can be found [here](https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-maven-plugin/README.md).
 

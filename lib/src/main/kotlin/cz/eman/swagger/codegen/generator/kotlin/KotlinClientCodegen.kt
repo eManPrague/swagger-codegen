@@ -30,6 +30,7 @@ import java.io.File
  * - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
  * - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
  * - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
+ * - `removeOperationParams` - By this property you can remove specific parameters from API operations.
  *
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  * @author eMan s.r.o. (david.sucharda@eman.cz)
@@ -40,6 +41,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private var emptyDataClasses = false
     private var composedArrayAsAny = true
     private var generatePrimitiveTypeAlias = false
+    private var removeOperationParams: List<String> = emptyList()
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
     companion object {
@@ -172,14 +174,15 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     @Suppress("UNCHECKED_CAST")
     override fun postProcessOperationsWithModels(
-            objs: MutableMap<String?, Any?>,
-            allModels: List<Any?>?
+        objs: MutableMap<String?, Any?>,
+        allModels: List<Any?>?
     ): Map<String, Any>? {
         super.postProcessOperationsWithModels(objs, allModels)
         val operations = objs["operations"] as? Map<String, Any>?
         if (operations != null) {
             (operations["operation"] as List<*>?)?.forEach { operation ->
                 if (operation is CodegenOperation) {
+                    filterOperationParams(operation)
                     if (operation.hasConsumes) {
                         if (isMultipartType(operation.consumes)) {
                             operation.isMultipart = true
@@ -226,8 +229,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 2.0.0
      */
     private fun initTemplates() {
-//        templateDir = "kotlin-client-v2"
-//        embeddedTemplateDir = templateDir
         modelTemplateFiles["model.mustache"] = ".kt"
         modelDocTemplateFiles["model_doc.mustache"] = ".md"
 
@@ -252,6 +253,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         initSettingsEmptyDataClass()
         initSettingsComposedArrayAny()
         initSettingsGeneratePrimitiveTypeAlias()
+        initSettingsRemoveOperationParams()
     }
 
     /**
@@ -277,8 +279,9 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun initHeaders() {
         val headersCli = CliOption(HEADER_CLI, HEADER_CLI_DESCRIPTION)
         val headersOptions = HashMap<String, String>()
-        headersOptions[HeadersCommands.REMOVE_MINUS_WORD_FROM_PROPERTY.value] = REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
-
+        headersOptions[HeadersCommands.REMOVE_MINUS_WORD_FROM_PROPERTY.value] =
+            REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
+        headersCli.enum = headersOptions
         cliOptions.add(headersCli)
     }
 
@@ -290,11 +293,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsEmptyDataClass() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        EMPTY_DATA_CLASS,
-                        EMPTY_DATA_CLASS_DESCRIPTION,
-                        false
-                )
+            CliOption.newBoolean(
+                EMPTY_DATA_CLASS,
+                EMPTY_DATA_CLASS_DESCRIPTION,
+                false
+            )
         )
     }
 
@@ -305,11 +308,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsComposedArrayAny() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        COMPOSED_ARRAY_ANY,
-                        COMPOSED_ARRAY_ANY_DESCRIPTION,
-                        true
-                )
+            CliOption.newBoolean(
+                COMPOSED_ARRAY_ANY,
+                COMPOSED_ARRAY_ANY_DESCRIPTION,
+                true
+            )
         )
     }
 
@@ -321,12 +324,22 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsGeneratePrimitiveTypeAlias() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        GENERATE_PRIMITIVE_TYPE_ALIAS,
-                        GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
-                        false
-                )
+            CliOption.newBoolean(
+                GENERATE_PRIMITIVE_TYPE_ALIAS,
+                GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
+                false
+            )
         )
+    }
+
+    /**
+     * Settings used to to remove parameters from operations. Value should an array/list of strings.
+     *
+     * @since 2.0.0
+     */
+    private fun initSettingsRemoveOperationParams() {
+        val removeOperationParamsCli = CliOption(REMOVE_OPERATION_PARAMS, REMOVE_OPERATION_PARAMS_DESCRIPTION)
+        cliOptions.add(removeOperationParamsCli)
     }
 
     /**
@@ -336,9 +349,9 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun addLibraries() {
         supportedLibraries[ROOM] =
-                "Platform: Room v1. JSON processing: Moshi 1.9.2."
+            "Platform: Room v1. JSON processing: Moshi 1.9.2."
         supportedLibraries[ROOM2] =
-                "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
+            "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
 
         val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
@@ -399,6 +412,26 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         if (additionalProperties.containsKey(CodegenConstants.MODEL_NAME_SUFFIX)) {
             setModelNameSuffix(additionalProperties[CodegenConstants.MODEL_NAME_SUFFIX] as String?)
         }
+
+        if (additionalProperties.containsKey(REMOVE_OPERATION_PARAMS)) {
+            removeOperationParams = when (val tempArray = additionalProperties[REMOVE_OPERATION_PARAMS]) {
+                is Array<*> -> tempArray.mapNotNull { mapAnyToStringOrNull(it) }
+                is List<*> -> tempArray.mapNotNull { mapAnyToStringOrNull(it) }
+                else -> emptyList()
+            }
+        }
+    }
+
+    /**
+     * Maps [Any]? value to [String]?.
+     *
+     * @param value to be mapped to [String]?
+     * @since 2.0.0
+     */
+    private fun mapAnyToStringOrNull(value: Any?) : String? = if (value is String) {
+        value
+    } else {
+        null
     }
 
     /**
@@ -414,8 +447,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         if (!emptyDataClasses) {
             schema?.let {
                 if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema
-                        && (it.type == null || it.type.isEmpty())
-                        && (it.properties == null || it.properties.isEmpty())
+                    && (it.type == null || it.type.isEmpty())
+                    && (it.properties == null || it.properties.isEmpty())
                 ) {
                     logger.info("Schema: $name re-typed to \"string\"")
                     it.type = "string"
@@ -490,7 +523,19 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun escapePropertyBaseNameLiteral(modelProperties: List<CodegenProperty>) {
         modelProperties.forEach { property ->
             property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
-                    property.baseName.replace("$", "\\$")
+                property.baseName.replace("$", "\\$")
+        }
+    }
+
+    /**
+     * Filters out operation params if their base name is contained in [removeOperationParams] list.
+     *
+     * @param operation to have params filtered
+     * @since 2.0.0
+     */
+    private fun filterOperationParams(operation: CodegenOperation) {
+        if(removeOperationParams.isNotEmpty()) {
+            operation.allParams.removeIf { removeOperationParams.contains(it.baseName) }
         }
     }
 
@@ -505,5 +550,4 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         val firstType = consumes[0]
         return "multipart/form-data" == firstType["mediaType"]
     }
-
 }
