@@ -428,7 +428,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @param value to be mapped to [String]?
      * @since 2.0.0
      */
-    private fun mapAnyToStringOrNull(value: Any?) : String? = if (value is String) {
+    private fun mapAnyToStringOrNull(value: Any?): String? = if (value is String) {
         value
     } else {
         null
@@ -534,8 +534,9 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 2.0.0
      */
     private fun filterOperationParams(operation: CodegenOperation) {
-        if(removeOperationParams.isNotEmpty()) {
+        if (removeOperationParams.isNotEmpty()) {
             operation.allParams.removeIf { removeOperationParams.contains(it.baseName) }
+            operation.allParams.last().hasMore = false
         }
     }
 
