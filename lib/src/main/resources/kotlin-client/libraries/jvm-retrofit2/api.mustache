@@ -39,7 +39,7 @@ interface {{classname}} {
     {{/-first}}
     {{/prioritizedContentTypes}}
     {{/formParams}}
-    @{{httpMethod}}("{{{path}}}")
+    @{{httpMethod}}("{{#ignoreEndpointStartingSlash}}{{#lambda.ignoreStartingSlash}}{{path}}{{/lambda.ignoreStartingSlash}}{{/ignoreEndpointStartingSlash}}{{^ignoreEndpointStartingSlash}}{{path}}{{/ignoreEndpointStartingSlash}}")
     fun {{operationId}}({{^allParams}}){{/allParams}}{{#allParams}}{{>libraries/jvm-retrofit2/queryParams}}{{>libraries/jvm-retrofit2/pathParams}}{{>libraries/jvm-retrofit2/headerParams}}{{>libraries/jvm-retrofit2/bodyParams}}{{>libraries/jvm-retrofit2/formParams}}{{#hasMore}}, {{/hasMore}}{{^hasMore}}){{/hasMore}}{{/allParams}}: Call<{{#isResponseFile}}ResponseBody{{/isResponseFile}}{{^isResponseFile}}{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Unit{{/returnType}}{{/isResponseFile}}>
 
     {{/operation}}

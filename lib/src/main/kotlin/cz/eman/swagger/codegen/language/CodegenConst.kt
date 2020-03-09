@@ -35,3 +35,6 @@ const val HEADER_CLI = "headerCliOptions"
 const val HEADER_CLI_DESCRIPTION = "Options to generate Header"
 const val REMOVE_MINUS_TEXT_FROM_HEADER = "removeMinusTextInHeaderProperty"
 const val REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION = "Remove minus text from header's property name if it is present."
+
+const val REMOVE_ENDPOINT_STARTING_SLASH = "ignoreEndpointStartingSlash"
+const val REMOVE_ENDPOINT_STARTING_SLASH_DESCRIPTION = "Remove/Ignore a starting slash from an endpoint definition if it is present."

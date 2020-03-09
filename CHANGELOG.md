@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## 2.0.0 (2020-03-09)
+- Introduced a new config parameter `ignoreEndpointStartingSlash` to ignore endpoint's starting slash in generated 
+Retrofit API service class. See `IgnoreStartingSlashLambda` for more details.
+- Introduced a new lambda `IgnoreStartingSlashLambda` (`{{#lambda.ignoreStartingSlash}}{{paramName}}{{/lambda.ignoreStartingSlash}}`) 
+which removes word *minus* in a fragment if it's in it.
+- For rest of changes see all `2.0.0-xx` changelog messages.
+
 ## 2.0.0-rc03 (2020-02-18)
 
 ### Fixed
@@ -26,7 +33,7 @@ Change Log
 ## 2.0.0-alpha02 (2019-01-21)
 
 ### Added
-- Introduced a new labda `RemoveMinusTextFromNameLambda` (`{{#lambda.removeMinusText}}{{paramName}}{{/lambda.removeMinusText}}`) which removes word *minus* in a fragment if it's in it.
+- Introduced a new lambda `RemoveMinusTextFromNameLambda` (`{{#lambda.removeMinusText}}{{paramName}}{{/lambda.removeMinusText}}`) which removes word *minus* in a fragment if it's in it.
 - New property to remove `minus` word from the header's property name: `additionalProperties["removeMinusTextInHeaderProperty"] = true`. By default `false` will be used.
 
 ### Fixed
