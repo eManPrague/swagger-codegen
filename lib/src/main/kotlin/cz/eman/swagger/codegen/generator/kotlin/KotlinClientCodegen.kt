@@ -546,7 +546,9 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun filterOperationParams(operation: CodegenOperation) {
         if (removeOperationParams.isNotEmpty()) {
             operation.allParams.removeIf { removeOperationParams.contains(it.baseName) }
-            operation.allParams.last().hasMore = false
+            if (operation.allParams.isNotEmpty()) {
+                operation.allParams.last().hasMore = false
+            }
         }
     }
 

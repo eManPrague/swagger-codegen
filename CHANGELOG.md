@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## 2.0.1 (2020-03-10)
+
+### Fixed
+- Fix of an error `Could not generate api file List is empty` caused if endpoint has no parameters after removing all from 
+parameter `removeOperationParams` (occurred if this parameter is present).
+
 ## 2.0.0 (2020-03-09)
 - Introduced a new config parameter `ignoreEndpointStartingSlash` to ignore endpoint's starting slash in generated 
 Retrofit API service class. See `IgnoreStartingSlashLambda` for more details.
