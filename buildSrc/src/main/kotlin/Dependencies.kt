@@ -1,7 +1,7 @@
 /* =============================  VERSIONS ======================= */
 
 private object Versions {
-    const val kotlin = "1.3.61"
+    const val kotlin = "1.3.71"
     const val dokka = "0.10.0"
     const val bintrayGradle = "1.8.4"
 

@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+## 2.1.0 (TBD)
+
+### Changed
+- Kotlin updated to [v1.3.71](https://github.com/JetBrains/kotlin/releases/tag/v1.3.71)
+
 ## 2.0.1 (2020-03-10)
 
 ### Fixed
