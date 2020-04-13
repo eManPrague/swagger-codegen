@@ -32,6 +32,8 @@ import java.io.File
  * - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
  * - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
  * - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
+ * - `composedVarsNotRequired` - By this property Composed schemas (oneOf, anyOf) will have all variables as not required (nullable).
+ *    Can be used for schema that references object that is required to mark it as not required.
  * - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
  * - `removeOperationParams` - By this property you can remove specific parameters from API operations.
  * - `ignoreEndpointStartingSlash` - By this property you can ignore a starting slash from an endpoint definition if it is present.
@@ -45,6 +47,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private var emptyDataClasses = false
     private var composedArrayAsAny = true
     private var generatePrimitiveTypeAlias = false
+    private var composedVarsNotRequired = false
     private var removeOperationParams: List<String> = emptyList()
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
@@ -172,6 +175,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
             (mo["model"] as CodegenModel?)?.let {
                 setModelVendorExtensions(it)
                 fixAllOfModelInheritance(it)
+                setComposedVarsAsNotRequired(it)
             }
         }
         return objects
@@ -265,6 +269,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         initSettingsEmptyDataClass()
         initSettingsComposedArrayAny()
         initSettingsGeneratePrimitiveTypeAlias()
+        initSettingsComposedVarsNotRequired()
         initSettingsRemoveOperationParams()
     }
 
@@ -348,6 +353,22 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
+     * Settings to force variables of ComposedSchema (oneOf, anyOf) to not be required. When set to true all variables
+     * will be nullable even if they are references to required objects. Default: false.
+     *
+     * @since 2.1.0
+     */
+    private fun initSettingsComposedVarsNotRequired() {
+        cliOptions.add(
+            CliOption.newBoolean(
+                COMPOSED_VARS_NOT_REQUIRED,
+                COMPOSED_VARS_NOT_REQUIRED_DESCRIPTION,
+                false
+            )
+        )
+    }
+
+    /**
      * Settings used to to remove parameters from operations. Value should an array/list of strings.
      *
      * @since 2.0.0
@@ -408,6 +429,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * - Empty data class: allows generating empty data classes. For more information see [initSettingsEmptyDataClass].
      * - Composed array as any: transforms array of composed to array or kotlin.Any. For more information see [initSettingsComposedArrayAny].
      * - Generate primitive type alias: generates alias for primitive objects. For more information see [initSettingsGeneratePrimitiveTypeAlias].
+     * - Composed vars not required: Forces vars to be nullable. For more information see [initSettingsComposedVarsNotRequired].
      *
      * @since 2.0.0
      */
@@ -422,6 +444,10 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
 
         if (additionalProperties.containsKey(GENERATE_PRIMITIVE_TYPE_ALIAS)) {
             generatePrimitiveTypeAlias = convertPropertyToBooleanAndWriteBack(GENERATE_PRIMITIVE_TYPE_ALIAS)
+        }
+
+        if (additionalProperties.containsKey(COMPOSED_VARS_NOT_REQUIRED)) {
+            composedVarsNotRequired = convertPropertyToBooleanAndWriteBack(COMPOSED_VARS_NOT_REQUIRED)
         }
 
         if (additionalProperties.containsKey(CodegenConstants.MODEL_NAME_SUFFIX)) {
@@ -512,15 +538,36 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * - https://github.com/OpenAPITools/openapi-generator/pull/5396 (allVars instead of vars)
      * - https://github.com/OpenAPITools/openapi-generator/pull/4453 (kotlin inheritance)
      *
+     * TODO: Multiple fixes are planned for 4.3.1 OpenApi Gen. Check if this can be removed after it is released.
+     *
      * @param model to be fixed
+     * @since 2.1.0
      */
     private fun fixAllOfModelInheritance(model: CodegenModel) {
         if (model.allOf != null && model.allOf.isNotEmpty()) {
+            logger.info("Model: ${model.name} allOf inheritance fixed")
             model.parent = null
             model.parentModel = null
             model.vars = model.allVars.apply {
                 forEach { it.isInherited = false }
             }
+        }
+    }
+
+    /**
+     * Sets model vars and all vars of Composed schema as not required (nullable). This only works when
+     * [composedVarsNotRequired] is set to true and model has either oneOf or anyOf variables set and not empty.
+     *
+     * @param model to be fixed
+     * @since 2.1.0
+     */
+    private fun setComposedVarsAsNotRequired(model: CodegenModel) {
+        if (composedVarsNotRequired &&
+            ((model.oneOf != null && model.oneOf.isNotEmpty()) || (model.anyOf != null && model.anyOf.isNotEmpty()))
+        ) {
+            logger.info("Model: ${model.name} composed (oneOf, anyOf) variables set as not required")
+            model.vars.forEach { it.required = false }
+            model.allVars.forEach { it.required = false }
         }
     }
 

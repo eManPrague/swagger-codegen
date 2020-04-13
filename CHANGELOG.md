@@ -5,6 +5,7 @@ Change Log
 
 ### Added
 - @Path params are always first in operation.
+- Option to force variables of Composed schema (oneOf and anyOf) as not required (nullable).
 
 ### Changed
 - Kotlin updated to [v1.3.71](https://github.com/JetBrains/kotlin/releases/tag/v1.3.71)
@@ -12,6 +13,9 @@ Change Log
 
 ### Fixed
 - Kotlin allOf inheritance.
+
+### Removed
+- Not used constants.
 
 ## 2.0.1 (2020-03-10)
 
