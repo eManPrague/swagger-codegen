@@ -3,6 +3,9 @@ Change Log
 
 ## 2.1.0 (TBD)
 
+### Added
+- @Path params are always first in operation.
+
 ### Changed
 - Kotlin updated to [v1.3.71](https://github.com/JetBrains/kotlin/releases/tag/v1.3.71)
 - OpenApi Codegen updated to [v4.3.0](https://github.com/OpenAPITools/openapi-generator/releases/tag/v4.3.0)

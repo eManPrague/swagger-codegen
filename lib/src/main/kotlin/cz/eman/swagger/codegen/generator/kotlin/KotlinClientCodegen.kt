@@ -6,11 +6,13 @@ import cz.eman.swagger.codegen.language.*
 import cz.eman.swagger.codegen.templating.mustache.IgnoreStartingSlashLambda
 import cz.eman.swagger.codegen.templating.mustache.RemoveMinusTextFromNameLambda
 import io.swagger.v3.oas.models.media.*
+import org.gradle.util.CollectionUtils.sort
 import org.openapitools.codegen.*
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+
 
 /**
  * Kotlin client generator based on [AbstractKotlinCodegen]. Contains libraries and options that are not supported in
@@ -206,6 +208,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
                             }
                         }
                     }
+
+                    sortAllParams(operation)
                 }
             }
         }
@@ -562,5 +566,30 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun isMultipartType(consumes: List<Map<String, String>>): Boolean {
         val firstType = consumes[0]
         return "multipart/form-data" == firstType["mediaType"]
+    }
+
+    /**
+     * Sorts all parameters of operation to have path parameters first. Retrofit2 requires to have @Path parameter must
+     * not come after some parameters that is why they are always first after sorting.
+     * https://github.com/square/retrofit/blob/master/retrofit/src/main/java/retrofit2/RequestFactory.java#L376
+     *
+     * @param operation to sort all params for
+     * @since 2.0.2
+     */
+    private fun sortAllParams(operation: CodegenOperation) {
+        if (operation.allParams != null) {
+            sort(operation.allParams) { first, second ->
+                when {
+                    first.isPathParam && !second.isPathParam -> -1
+                    !first.isPathParam && second.isPathParam -> 1
+                    else -> 0
+                }
+            }
+            val iterator: Iterator<CodegenParameter> = operation.allParams.iterator()
+            while (iterator.hasNext()) {
+                val param = iterator.next()
+                param.hasMore = iterator.hasNext()
+            }
+        }
     }
 }
