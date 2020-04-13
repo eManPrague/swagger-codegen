@@ -10,6 +10,9 @@ Change Log
 - Kotlin updated to [v1.3.71](https://github.com/JetBrains/kotlin/releases/tag/v1.3.71)
 - OpenApi Codegen updated to [v4.3.0](https://github.com/OpenAPITools/openapi-generator/releases/tag/v4.3.0)
 
+### Fixed
+- Kotlin allOf inheritance.
+
 ## 2.0.1 (2020-03-10)
 
 ### Fixed

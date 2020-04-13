@@ -171,6 +171,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
             val mo = model as Map<*, *>
             (mo["model"] as CodegenModel?)?.let {
                 setModelVendorExtensions(it)
+                fixAllOfModelInheritance(it)
             }
         }
         return objects
@@ -183,8 +184,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     @Suppress("UNCHECKED_CAST")
     override fun postProcessOperationsWithModels(
-            objs: MutableMap<String?, Any?>,
-            allModels: List<Any?>?
+        objs: MutableMap<String?, Any?>,
+        allModels: List<Any?>?
     ): Map<String, Any>? {
         super.postProcessOperationsWithModels(objs, allModels)
         val operations = objs["operations"] as? Map<String, Any>?
@@ -279,7 +280,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         infraOptions[GenerateApiType.INFRASTRUCTURE.value] = "Generate Infrastructure API"
         infraOptions[GenerateApiType.API.value] = "Generate API"
         infraOptions[EndpointsCommands.INGORE_ENDPOINT_STARTING_SLASH.value] =
-                REMOVE_ENDPOINT_STARTING_SLASH_DESCRIPTION
+            REMOVE_ENDPOINT_STARTING_SLASH_DESCRIPTION
         infrastructureCli.enum = infraOptions
 
         cliOptions.add(infrastructureCli)
@@ -294,7 +295,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         val headersCli = CliOption(HEADER_CLI, HEADER_CLI_DESCRIPTION)
         val headersOptions = HashMap<String, String>()
         headersOptions[HeadersCommands.REMOVE_MINUS_WORD_FROM_PROPERTY.value] =
-                REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
+            REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
         headersCli.enum = headersOptions
         cliOptions.add(headersCli)
     }
@@ -307,11 +308,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsEmptyDataClass() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        EMPTY_DATA_CLASS,
-                        EMPTY_DATA_CLASS_DESCRIPTION,
-                        false
-                )
+            CliOption.newBoolean(
+                EMPTY_DATA_CLASS,
+                EMPTY_DATA_CLASS_DESCRIPTION,
+                false
+            )
         )
     }
 
@@ -322,11 +323,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsComposedArrayAny() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        COMPOSED_ARRAY_ANY,
-                        COMPOSED_ARRAY_ANY_DESCRIPTION,
-                        true
-                )
+            CliOption.newBoolean(
+                COMPOSED_ARRAY_ANY,
+                COMPOSED_ARRAY_ANY_DESCRIPTION,
+                true
+            )
         )
     }
 
@@ -338,11 +339,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsGeneratePrimitiveTypeAlias() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        GENERATE_PRIMITIVE_TYPE_ALIAS,
-                        GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
-                        false
-                )
+            CliOption.newBoolean(
+                GENERATE_PRIMITIVE_TYPE_ALIAS,
+                GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
+                false
+            )
         )
     }
 
@@ -363,9 +364,9 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun addLibraries() {
         supportedLibraries[ROOM] =
-                "Platform: Room v1. JSON processing: Moshi 1.9.2."
+            "Platform: Room v1. JSON processing: Moshi 1.9.2."
         supportedLibraries[ROOM2] =
-                "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
+            "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
 
         val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
@@ -461,8 +462,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         if (!emptyDataClasses) {
             schema?.let {
                 if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema
-                        && (it.type == null || it.type.isEmpty())
-                        && (it.properties == null || it.properties.isEmpty())
+                    && (it.type == null || it.type.isEmpty())
+                    && (it.properties == null || it.properties.isEmpty())
                 ) {
                     logger.info("Schema: $name re-typed to \"string\"")
                     it.type = "string"
@@ -505,6 +506,25 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
+     * Fixes allOf model inheritance by removing parent and flattening all variables into the model.
+     * Related issues:
+     * - https://github.com/OpenAPITools/openapi-generator/issues/5876 (forced inheritance)
+     * - https://github.com/OpenAPITools/openapi-generator/pull/5396 (allVars instead of vars)
+     * - https://github.com/OpenAPITools/openapi-generator/pull/4453 (kotlin inheritance)
+     *
+     * @param model to be fixed
+     */
+    private fun fixAllOfModelInheritance(model: CodegenModel) {
+        if (model.allOf != null && model.allOf.isNotEmpty()) {
+            model.parent = null
+            model.parentModel = null
+            model.vars = model.allVars.apply {
+                forEach { it.isInherited = false }
+            }
+        }
+    }
+
+    /**
      * Marks model as typealias using vendor extension [VENDOR_EXTENSION_IS_ALIAS]. This extension is set in two
      * cases:
      * - [emptyDataClasses] is set to false and model has no properties.
@@ -537,7 +557,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun escapePropertyBaseNameLiteral(modelProperties: List<CodegenProperty>) {
         modelProperties.forEach { property ->
             property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
-                    property.baseName.replace("$", "\\$")
+                property.baseName.replace("$", "\\$")
         }
     }
 
