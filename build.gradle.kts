@@ -11,6 +11,7 @@ buildscript {
         classpath(GradlePlugins.kotlin)
         classpath(GradlePlugins.dokka)
         classpath(GradlePlugins.bintrayGradle)
+        classpath(Dependencies.GradlePlugins.swaggerCodeGen)
     }
 }
 
