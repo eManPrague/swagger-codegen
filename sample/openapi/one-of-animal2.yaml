@@ -1,0 +1,53 @@
+openapi: 3.0.2
+info:
+  title: Test
+  version: 0.1.0
+servers:
+  - url: http://localhost
+paths:
+  /pets:
+    patch:
+      parameters:
+        - in: header
+          name: Accept-Language
+          schema:
+            type: string
+            enum:
+              - cs
+              - en
+          required: true
+      responses:
+        '200':
+          $ref: '#/components/responses/sampleObjectResponse'
+          description: Updated
+components:
+  responses:
+    sampleObjectResponse:
+      description: Returns a list of pending transactions for a specific type.
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/Cat'
+              - $ref: '#/components/schemas/Dog'
+            discriminator:
+              propertyName: objectType
+              mapping:
+                obj1: '#/components/schemas/Cat'
+                obj2: '#/components/schemas/Dog'
+  schemas:
+    Dog:
+      type: object
+      properties:
+        bark:
+          type: boolean
+        breed:
+          type: string
+          enum: [Dingo, Husky, Retriever, Shepherd]
+    Cat:
+      type: object
+      properties:
+        hunts:
+          type: boolean
+        age:
+          type: integer
