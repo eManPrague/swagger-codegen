@@ -1,14 +1,14 @@
 Change Log
 ==========
 
-## 2.1.0 (TBD)
+## 2.1.0 (2020-04-16)
 
 ### Added
 - @Path params are always first in operation.
 - Option to force variables of Composed schema (oneOf and anyOf) as not required (nullable).
 
 ### Changed
-- Kotlin updated to [v1.3.71](https://github.com/JetBrains/kotlin/releases/tag/v1.3.71)
+- Kotlin updated to [v1.3.72](https://github.com/JetBrains/kotlin/releases/tag/v1.3.72)
 - OpenApi Codegen updated to [v4.3.0](https://github.com/OpenAPITools/openapi-generator/releases/tag/v4.3.0)
 
 ### Fixed
