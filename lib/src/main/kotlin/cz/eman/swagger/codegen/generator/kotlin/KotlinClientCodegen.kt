@@ -6,11 +6,13 @@ import cz.eman.swagger.codegen.language.*
 import cz.eman.swagger.codegen.templating.mustache.IgnoreStartingSlashLambda
 import cz.eman.swagger.codegen.templating.mustache.RemoveMinusTextFromNameLambda
 import io.swagger.v3.oas.models.media.*
+import org.gradle.util.CollectionUtils.sort
 import org.openapitools.codegen.*
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+
 
 /**
  * Kotlin client generator based on [AbstractKotlinCodegen]. Contains libraries and options that are not supported in
@@ -30,6 +32,8 @@ import java.io.File
  * - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
  * - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
  * - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
+ * - `composedVarsNotRequired` - By this property Composed schemas (oneOf, anyOf) will have all variables as not required (nullable).
+ *    Can be used for schema that references object that is required to mark it as not required.
  * - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
  * - `removeOperationParams` - By this property you can remove specific parameters from API operations.
  * - `ignoreEndpointStartingSlash` - By this property you can ignore a starting slash from an endpoint definition if it is present.
@@ -43,6 +47,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private var emptyDataClasses = false
     private var composedArrayAsAny = true
     private var generatePrimitiveTypeAlias = false
+    private var composedVarsNotRequired = false
     private var removeOperationParams: List<String> = emptyList()
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
@@ -169,6 +174,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
             val mo = model as Map<*, *>
             (mo["model"] as CodegenModel?)?.let {
                 setModelVendorExtensions(it)
+                fixAllOfModelInheritance(it)
+                setComposedVarsAsNotRequired(it)
             }
         }
         return objects
@@ -181,8 +188,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     @Suppress("UNCHECKED_CAST")
     override fun postProcessOperationsWithModels(
-            objs: MutableMap<String?, Any?>,
-            allModels: List<Any?>?
+        objs: MutableMap<String?, Any?>,
+        allModels: List<Any?>?
     ): Map<String, Any>? {
         super.postProcessOperationsWithModels(objs, allModels)
         val operations = objs["operations"] as? Map<String, Any>?
@@ -206,6 +213,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
                             }
                         }
                     }
+
+                    sortAllParams(operation)
                 }
             }
         }
@@ -260,6 +269,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         initSettingsEmptyDataClass()
         initSettingsComposedArrayAny()
         initSettingsGeneratePrimitiveTypeAlias()
+        initSettingsComposedVarsNotRequired()
         initSettingsRemoveOperationParams()
     }
 
@@ -275,7 +285,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         infraOptions[GenerateApiType.INFRASTRUCTURE.value] = "Generate Infrastructure API"
         infraOptions[GenerateApiType.API.value] = "Generate API"
         infraOptions[EndpointsCommands.INGORE_ENDPOINT_STARTING_SLASH.value] =
-                REMOVE_ENDPOINT_STARTING_SLASH_DESCRIPTION
+            REMOVE_ENDPOINT_STARTING_SLASH_DESCRIPTION
         infrastructureCli.enum = infraOptions
 
         cliOptions.add(infrastructureCli)
@@ -290,7 +300,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         val headersCli = CliOption(HEADER_CLI, HEADER_CLI_DESCRIPTION)
         val headersOptions = HashMap<String, String>()
         headersOptions[HeadersCommands.REMOVE_MINUS_WORD_FROM_PROPERTY.value] =
-                REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
+            REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
         headersCli.enum = headersOptions
         cliOptions.add(headersCli)
     }
@@ -303,11 +313,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsEmptyDataClass() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        EMPTY_DATA_CLASS,
-                        EMPTY_DATA_CLASS_DESCRIPTION,
-                        false
-                )
+            CliOption.newBoolean(
+                EMPTY_DATA_CLASS,
+                EMPTY_DATA_CLASS_DESCRIPTION,
+                false
+            )
         )
     }
 
@@ -318,11 +328,11 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsComposedArrayAny() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        COMPOSED_ARRAY_ANY,
-                        COMPOSED_ARRAY_ANY_DESCRIPTION,
-                        true
-                )
+            CliOption.newBoolean(
+                COMPOSED_ARRAY_ANY,
+                COMPOSED_ARRAY_ANY_DESCRIPTION,
+                true
+            )
         )
     }
 
@@ -334,11 +344,27 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun initSettingsGeneratePrimitiveTypeAlias() {
         cliOptions.add(
-                CliOption.newBoolean(
-                        GENERATE_PRIMITIVE_TYPE_ALIAS,
-                        GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
-                        false
-                )
+            CliOption.newBoolean(
+                GENERATE_PRIMITIVE_TYPE_ALIAS,
+                GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION,
+                false
+            )
+        )
+    }
+
+    /**
+     * Settings to force variables of ComposedSchema (oneOf, anyOf) to not be required. When set to true all variables
+     * will be nullable even if they are references to required objects. Default: false.
+     *
+     * @since 2.1.0
+     */
+    private fun initSettingsComposedVarsNotRequired() {
+        cliOptions.add(
+            CliOption.newBoolean(
+                COMPOSED_VARS_NOT_REQUIRED,
+                COMPOSED_VARS_NOT_REQUIRED_DESCRIPTION,
+                false
+            )
         )
     }
 
@@ -359,9 +385,9 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun addLibraries() {
         supportedLibraries[ROOM] =
-                "Platform: Room v1. JSON processing: Moshi 1.9.2."
+            "Platform: Room v1. JSON processing: Moshi 1.9.2."
         supportedLibraries[ROOM2] =
-                "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
+            "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
 
         val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
@@ -403,6 +429,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * - Empty data class: allows generating empty data classes. For more information see [initSettingsEmptyDataClass].
      * - Composed array as any: transforms array of composed to array or kotlin.Any. For more information see [initSettingsComposedArrayAny].
      * - Generate primitive type alias: generates alias for primitive objects. For more information see [initSettingsGeneratePrimitiveTypeAlias].
+     * - Composed vars not required: Forces vars to be nullable. For more information see [initSettingsComposedVarsNotRequired].
      *
      * @since 2.0.0
      */
@@ -417,6 +444,10 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
 
         if (additionalProperties.containsKey(GENERATE_PRIMITIVE_TYPE_ALIAS)) {
             generatePrimitiveTypeAlias = convertPropertyToBooleanAndWriteBack(GENERATE_PRIMITIVE_TYPE_ALIAS)
+        }
+
+        if (additionalProperties.containsKey(COMPOSED_VARS_NOT_REQUIRED)) {
+            composedVarsNotRequired = convertPropertyToBooleanAndWriteBack(COMPOSED_VARS_NOT_REQUIRED)
         }
 
         if (additionalProperties.containsKey(CodegenConstants.MODEL_NAME_SUFFIX)) {
@@ -457,8 +488,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         if (!emptyDataClasses) {
             schema?.let {
                 if (it !is ArraySchema && it !is MapSchema && it !is ComposedSchema
-                        && (it.type == null || it.type.isEmpty())
-                        && (it.properties == null || it.properties.isEmpty())
+                    && (it.type == null || it.type.isEmpty())
+                    && (it.properties == null || it.properties.isEmpty())
                 ) {
                     logger.info("Schema: $name re-typed to \"string\"")
                     it.type = "string"
@@ -501,6 +532,46 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
+     * Fixes allOf model inheritance by removing parent and flattening all variables into the model.
+     * Related issues:
+     * - https://github.com/OpenAPITools/openapi-generator/issues/5876 (forced inheritance)
+     * - https://github.com/OpenAPITools/openapi-generator/pull/5396 (allVars instead of vars)
+     * - https://github.com/OpenAPITools/openapi-generator/pull/4453 (kotlin inheritance)
+     *
+     * TODO: Multiple fixes are planned for 4.3.1 OpenApi Gen. Check if this can be removed after it is released.
+     *
+     * @param model to be fixed
+     * @since 2.1.0
+     */
+    private fun fixAllOfModelInheritance(model: CodegenModel) {
+        if (model.allOf != null && model.allOf.isNotEmpty()) {
+            logger.info("Model: ${model.name} allOf inheritance fixed")
+            model.parent = null
+            model.parentModel = null
+            model.vars = model.allVars.apply {
+                forEach { it.isInherited = false }
+            }
+        }
+    }
+
+    /**
+     * Sets model vars and all vars of Composed schema as not required (nullable). This only works when
+     * [composedVarsNotRequired] is set to true and model has either oneOf or anyOf variables set and not empty.
+     *
+     * @param model to be fixed
+     * @since 2.1.0
+     */
+    private fun setComposedVarsAsNotRequired(model: CodegenModel) {
+        if (composedVarsNotRequired &&
+            ((model.oneOf != null && model.oneOf.isNotEmpty()) || (model.anyOf != null && model.anyOf.isNotEmpty()))
+        ) {
+            logger.info("Model: ${model.name} composed (oneOf, anyOf) variables set as not required")
+            model.vars.forEach { it.required = false }
+            model.allVars.forEach { it.required = false }
+        }
+    }
+
+    /**
      * Marks model as typealias using vendor extension [VENDOR_EXTENSION_IS_ALIAS]. This extension is set in two
      * cases:
      * - [emptyDataClasses] is set to false and model has no properties.
@@ -533,7 +604,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun escapePropertyBaseNameLiteral(modelProperties: List<CodegenProperty>) {
         modelProperties.forEach { property ->
             property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
-                    property.baseName.replace("$", "\\$")
+                property.baseName.replace("$", "\\$")
         }
     }
 
@@ -562,5 +633,30 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun isMultipartType(consumes: List<Map<String, String>>): Boolean {
         val firstType = consumes[0]
         return "multipart/form-data" == firstType["mediaType"]
+    }
+
+    /**
+     * Sorts all parameters of operation to have path parameters first. Retrofit2 requires to have @Path parameter must
+     * not come after some parameters that is why they are always first after sorting.
+     * https://github.com/square/retrofit/blob/master/retrofit/src/main/java/retrofit2/RequestFactory.java#L376
+     *
+     * @param operation to sort all params for
+     * @since 2.0.2
+     */
+    private fun sortAllParams(operation: CodegenOperation) {
+        if (operation.allParams != null) {
+            sort(operation.allParams) { first, second ->
+                when {
+                    first.isPathParam && !second.isPathParam -> -1
+                    !first.isPathParam && second.isPathParam -> 1
+                    else -> 0
+                }
+            }
+            val iterator: Iterator<CodegenParameter> = operation.allParams.iterator()
+            while (iterator.hasNext()) {
+                val param = iterator.next()
+                param.hasMore = iterator.hasNext()
+            }
+        }
     }
 }

@@ -50,8 +50,9 @@ configure<SwaggerCodeGenConfig> {
             "apiNameSuffix" to "Service",
             "generateInfrastructure" to false,
             "emptyDataClasses" to false,
-            "generateAliasAsModel" to true,
             "composedArrayAsAny" to true,
+            "generateAliasAsModel" to true,
+            "composedVarsNotRequired" to true,
             "removeMinusTextInHeaderProperty" to true,
             "ignoreEndpointStartingSlash" to true,
             "generatePrimitiveTypeAlias" to false,
@@ -84,6 +85,8 @@ configure<SwaggerCodeGenConfig> {
     - `generateAliasAsModel` - By this property you can generate alias (array, map) as model.
     - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
     - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
+    - `composedVarsNotRequired` - By this property Composed schemas (oneOf, anyOf) will have all variables as not required (nullable).
+       Can be used for schema that references object that is required to mark it as not required.
     - `modelNameSuffix` - By this property you can define suffix to all model classes. E.g. `UserDto`, ...
     - `apiNameSuffix` - By this property you can define suffix to all api classes. E.g. `UserService`, ...
     - `apiPackage` - By this property you can define a package name for your service classes
