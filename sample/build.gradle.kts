@@ -59,21 +59,31 @@ configure<SwaggerCodeGenConfig> {
         listOf(
             SwaggerCodeGenTaskConfig(
                 inputFileName = "petstore.yaml",
-                outputFolderName = "one-of",
+                outputFolderName = "petstore",
                 additionalProperties = mapOf(
                     "apiPackage" to "cz.eman.swagger.api.petstore",
                     "modelPackage" to "cz.eman.swagger.api.petstore.model"
+                )
+            ),
+             SwaggerCodeGenTaskConfig(
+                inputFileName = "petstore-opt-def-arg-api.yaml",
+                outputFolderName = "petstore-def-and-opt-query",
+                additionalProperties = mapOf(
+                    "apiPackage" to "cz.eman.swagger.api.petstore.defoptapi",
+                    "modelPackage" to "cz.eman.swagger.api.petstore.defoptapi.model"
                 )
             )
         )
 }
 
-val generatedOneOfSrcDir = File(buildDir, "openapi/one-of/src/main/kotlin")
+val generatedPetStoreSrcDir = File(buildDir, "openapi/petstore/src/main/kotlin")
+val generatedPetStoreDefOptApiQuerySrcDir = File(buildDir, "openapi/petstore-def-and-opt-query/src/main/kotlin")
 
 sourceSets {
     getByName("main").java.srcDirs(
         "src/main/kotlin",
-            generatedOneOfSrcDir
+            generatedPetStoreSrcDir,
+            generatedPetStoreDefOptApiQuerySrcDir
     )
     getByName("test").java.srcDirs("src/test/kotlin")
 }

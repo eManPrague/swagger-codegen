@@ -2,6 +2,7 @@ import org.gradle.kotlin.dsl.repositories
 
 buildscript {
     repositories {
+        mavenLocal()
         google()
         jcenter()
         mavenCentral()
