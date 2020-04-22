@@ -1,0 +1,1 @@
+{{#isQueryParam}}@Query("{{baseName}}") {{{paramName}}}: {{#collectionFormat}}{{#isCollectionFormatMulti}}{{{dataType}}}{{>opt_datatype}}{{/isCollectionFormatMulti}}{{^isCollectionFormatMulti}}{{{collectionFormat.toUpperCase}}}Params{{/isCollectionFormatMulti}}{{/collectionFormat}}{{^collectionFormat}}{{{dataType}}}{{>opt_datatype}}{{/collectionFormat}}{{/isQueryParam}}

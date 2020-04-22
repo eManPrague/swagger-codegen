@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+## 2.1.1 (2020-04-22)
+
+### Fixed
+- `(jvm-retrofit)` an optional `@Query` parameter marked as not null in case of Kotlin generator. Now it is nullable.
+- `(jvm-retrofit)` missing default value in a `@Query` parameter if is present in the yaml file.
+
 ## 2.1.0 (2020-04-16)
 
 ### Added
