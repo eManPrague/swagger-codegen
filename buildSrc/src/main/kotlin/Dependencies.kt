@@ -12,7 +12,7 @@ private object Versions {
 
     const val retrofit = "2.6.0"
     const val moshi = "1.9.2"
-    const val swaggerCodeGen = "2.1.1"
+    const val swaggerCodeGen = "2.1.8"
 }
 
 /* =============================  BUILD-PLUGINS ======================= */
