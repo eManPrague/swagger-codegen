@@ -9,6 +9,7 @@ import io.swagger.v3.oas.models.media.*
 import org.gradle.util.CollectionUtils.sort
 import org.openapitools.codegen.*
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
+import org.openapitools.codegen.utils.ModelUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -143,7 +144,20 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     override fun fromModel(name: String?, schema: Schema<*>?): CodegenModel {
         emptyDataClassAsString(name, schema)
         composedArrayAsAny(name, schema)
+        fixArrayItemsSchema(name, schema)
         return super.fromModel(name, schema)
+    }
+
+    /**
+     * Modifies property before actual [fromProperty] function is called. Fixes [ArraySchema] items to contain proper
+     * [ArraySchema] or [MapSchema] since it lost it's type and generated incorrect data type for nested arrays and
+     * maps.
+     *
+     * @since 2.1.2
+     */
+    override fun fromProperty(name: String?, schema: Schema<*>?): CodegenProperty {
+        fixArrayItemsSchema(name, schema)
+        return super.fromProperty(name, schema)
     }
 
     /**
@@ -509,6 +523,23 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         if (composedArrayAsAny && property is ArraySchema && property.items is ComposedSchema) {
             logger.info("Schema: $name is array of composed -> changed to array of object")
             property.items = ObjectSchema()
+        }
+    }
+
+    /**
+     * Fixes [ArraySchema] items to contain proper [ArraySchema] or [MapSchema] since it lost it's type and generated
+     * incorrect data type for nested arrays and maps.
+     *
+     * @since 2.1.2
+     */
+    private fun fixArrayItemsSchema(name: String?, property: Schema<*>?) {
+        if(property is ArraySchema && property.items != null) {
+            logger.info("Trying to fix array items for: $name")
+            val itemsSchema = ModelUtils.getReferencedSchema(openAPI, property.items)
+            if(ModelUtils.isMapSchema(itemsSchema) || ModelUtils.isArraySchema(itemsSchema)) {
+                logger.info("Array items is Map or Array schema")
+                property.items = itemsSchema
+            }
         }
     }
 

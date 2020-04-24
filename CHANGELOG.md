@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+## 2.1.2 (TBD)
+
+### Fixed
+- Nested arrays and maps in arrays contain type. Array<Array>> is now properly generated as Array<Array<Type>>.
+
 ## 2.1.1 (2020-04-22)
 
 ### Fixed
