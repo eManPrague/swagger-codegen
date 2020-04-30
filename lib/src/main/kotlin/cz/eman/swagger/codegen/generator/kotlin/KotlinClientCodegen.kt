@@ -145,7 +145,10 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         emptyDataClassAsString(name, schema)
         composedArrayAsAny(name, schema)
         fixArrayItemsSchema(name, schema)
-        return super.fromModel(name, schema)
+
+        val resultModel = super.fromModel(name, schema)
+        fixTypeAliasDataType(resultModel, schema)
+        return resultModel
     }
 
     /**
@@ -533,12 +536,27 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 2.1.2
      */
     private fun fixArrayItemsSchema(name: String?, property: Schema<*>?) {
-        if(property is ArraySchema && property.items != null) {
+        if (property is ArraySchema && property.items != null) {
             logger.info("Trying to fix array items for: $name")
             val itemsSchema = ModelUtils.getReferencedSchema(openAPI, property.items)
-            if(ModelUtils.isMapSchema(itemsSchema) || ModelUtils.isArraySchema(itemsSchema)) {
+            if (ModelUtils.isMapSchema(itemsSchema) || ModelUtils.isArraySchema(itemsSchema)) {
                 logger.info("Array items is Map or Array schema")
                 property.items = itemsSchema
+            }
+        }
+    }
+
+    /**
+     * Fixes data type for type alias pointing to Maps and Array. They lost subtypes and this fixes the issue.
+     *
+     * @param resultModel to have data type fixed
+     * @param schema of the model
+     * @since 2.1.3
+     */
+    private fun fixTypeAliasDataType(resultModel: CodegenModel, schema: Schema<*>?) {
+        if (ModelUtils.isGenerateAliasAsModel()) {
+            if (schema is MapSchema || schema is ArraySchema) {
+                resultModel.dataType = super.getTypeDeclaration(schema)
             }
         }
     }

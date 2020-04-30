@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+## 2.1.3 (TBD)
+
+### Fixed
+- Data type for type alias pointing to Maps and Arrays.
+
 ## 2.1.2 (2020-04-28)
 
 ### Fixed
