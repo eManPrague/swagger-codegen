@@ -27,6 +27,7 @@ open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
     var configs = listOf<SwaggerCodeGenTaskConfig>()
     var autoHook = true
     private var additionalPropertiesCopy: MutableMap<String, Any> = HashMap()
+    private var additionalPropertiesAddedKeys: MutableSet<String> = mutableSetOf()
 
     override fun toContext(): Context<*> {
         setWorkflowVariables()
@@ -78,7 +79,12 @@ open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
      * instead of the current one.
      */
     private fun mergeAdditionalProperties() {
+        additionalPropertiesAddedKeys.forEach { additionalPropertiesCopy.remove(it) }
+
         currentTaskConfig.additionalProperties?.forEach { (key, value) ->
+            if (!additionalPropertiesCopy.containsKey(key)) {
+                additionalPropertiesAddedKeys.add(key)
+            }
             additionalPropertiesCopy.remove(key)
             additionalPropertiesCopy[key] = value
         }

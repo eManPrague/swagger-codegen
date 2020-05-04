@@ -8,6 +8,7 @@ Change Log
 
 ### Fixed
 - Data type for type alias pointing to Maps and Arrays.
+- Task additional properties are cleaned properly before each task. Custom properties are removed properly.
 
 ## 2.1.2 (2020-04-28)
 
