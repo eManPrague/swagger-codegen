@@ -93,6 +93,7 @@ configure<SwaggerCodeGenConfig> {
     - `modelPackage` - By this property you can define a package name for your model classes
     - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
     - `removeOperationParams` - By this property you can remove specific parameters from API operations.
+    - `arrayAsArrayList` - By this property you can forcefully represent Array as ArrayList which can be useful with complex schemas. Use with caution.
     - `ignoreEndpointStartingSlash` - By this property you can ignore a starting slash from an endpoint definition if it is present
 
 Other options can be found [here](https://github.com/OpenAPITools/openapi-generator/blob/master/modules/openapi-generator-maven-plugin/README.md).

@@ -37,6 +37,7 @@ import java.io.File
  *    Can be used for schema that references object that is required to mark it as not required.
  * - `removeMinusTextInHeaderProperty` - By this property you can enable to generate name of header property without text minus if it is present.
  * - `removeOperationParams` - By this property you can remove specific parameters from API operations.
+ * - `arrayAsArrayList` - By this property you can forcefully represent Array as ArrayList which can be useful with complex schemas. Use with caution.
  * - `ignoreEndpointStartingSlash` - By this property you can ignore a starting slash from an endpoint definition if it is present.
  *
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
@@ -49,6 +50,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private var composedArrayAsAny = true
     private var generatePrimitiveTypeAlias = false
     private var composedVarsNotRequired = false
+    private var arrayAsArrayList = false
     private var removeOperationParams: List<String> = emptyList()
     private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
@@ -60,6 +62,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
 
         const val VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal"
         const val VENDOR_EXTENSION_IS_ALIAS = "x-is-alias"
+
+        const val TYPE_ARRAY_LIST = "ArrayList"
     }
 
     enum class GenerateApiType constructor(val value: String) {
@@ -119,6 +123,13 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         return toModelName(name)
     }
 
+    override fun toModelName(name: String): String {
+        if (name == TYPE_ARRAY_LIST) {
+            return name
+        }
+        return super.toModelName(name)
+    }
+
     override fun toApiName(name: String?): String {
         return super.toApiName(name) + apiNameSuffix
     }
@@ -133,6 +144,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         processOptsInfrastructure()
         processOptsAdditionalSupportingFiles()
         processOptsAdditional()
+        applyOptions()
     }
 
     /**
@@ -145,7 +157,10 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         emptyDataClassAsString(name, schema)
         composedArrayAsAny(name, schema)
         fixArrayItemsSchema(name, schema)
-        return super.fromModel(name, schema)
+
+        val resultModel = super.fromModel(name, schema)
+        fixTypeAliasDataType(resultModel, schema)
+        return resultModel
     }
 
     /**
@@ -285,6 +300,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         initSettingsGeneratePrimitiveTypeAlias()
         initSettingsComposedVarsNotRequired()
         initSettingsRemoveOperationParams()
+        initSettingsArrayAsArrayList()
     }
 
     /**
@@ -393,6 +409,22 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
+     * Settings used to to represent [Array] as [ArrayList] which can be useful with complex schemes like [Map]
+     * contained in [Array].
+     *
+     * @since 2.1.3
+     */
+    private fun initSettingsArrayAsArrayList() {
+        cliOptions.add(
+            CliOption.newBoolean(
+                ARRAY_AS_ARRAY_LIST,
+                ARRAY_AS_ARRAY_LIST_DESCRIPTION,
+                false
+            )
+        )
+    }
+
+    /**
      * Adds additional libraries to this generator: [ROOM] and [ROOM2].
      *
      * @since 2.0.0
@@ -475,6 +507,24 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
                 else -> emptyList()
             }
         }
+
+        if (additionalProperties.containsKey(ARRAY_AS_ARRAY_LIST)) {
+            arrayAsArrayList = convertPropertyToBooleanAndWriteBack(ARRAY_AS_ARRAY_LIST)
+        }
+    }
+
+    /**
+     * Applies options that are global and should be handled before any generation starts.
+     *
+     * @since 2.1.3
+     */
+    private fun applyOptions() {
+        if (arrayAsArrayList) {
+            logger.info("Representing kotlin.Array as ArrayList")
+            languageSpecificPrimitives.add(TYPE_ARRAY_LIST)
+            defaultIncludes.add(TYPE_ARRAY_LIST)
+            typeMapping["array"] = TYPE_ARRAY_LIST
+        }
     }
 
     /**
@@ -533,12 +583,27 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 2.1.2
      */
     private fun fixArrayItemsSchema(name: String?, property: Schema<*>?) {
-        if(property is ArraySchema && property.items != null) {
+        if (property is ArraySchema && property.items != null) {
             logger.info("Trying to fix array items for: $name")
             val itemsSchema = ModelUtils.getReferencedSchema(openAPI, property.items)
-            if(ModelUtils.isMapSchema(itemsSchema) || ModelUtils.isArraySchema(itemsSchema)) {
+            if (ModelUtils.isMapSchema(itemsSchema) || ModelUtils.isArraySchema(itemsSchema)) {
                 logger.info("Array items is Map or Array schema")
                 property.items = itemsSchema
+            }
+        }
+    }
+
+    /**
+     * Fixes data type for type alias pointing to Maps and Array. They lost subtypes and this fixes the issue.
+     *
+     * @param resultModel to have data type fixed
+     * @param schema of the model
+     * @since 2.1.3
+     */
+    private fun fixTypeAliasDataType(resultModel: CodegenModel, schema: Schema<*>?) {
+        if (ModelUtils.isGenerateAliasAsModel()) {
+            if (schema is MapSchema || schema is ArraySchema) {
+                resultModel.dataType = super.getTypeDeclaration(schema)
             }
         }
     }

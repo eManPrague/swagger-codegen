@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+## 2.1.3 (TBD)
+
+### Added:
+- Option to represent Array as ArrayList.
+
+### Fixed
+- Data type for type alias pointing to Maps and Arrays.
+- Task additional properties are cleaned properly before each task. Custom properties are removed properly.
+
 ## 2.1.2 (2020-04-28)
 
 ### Fixed
