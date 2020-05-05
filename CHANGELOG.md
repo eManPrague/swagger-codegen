@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-## 2.1.3 (TBD)
+## 2.2.0 (2020-05-05)
 
 ### Added:
 - Option to represent Array as ArrayList.

@@ -1,6 +1,6 @@
 # OpenApi 3 Codegen / Swagger
 
-[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=2.1.1) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/2.1.1/link)
+[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=2.2.0) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/2.2.0/link)
 
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
@@ -17,7 +17,7 @@ buildscript {
 
     // Kotlin Gradle DSL
     dependencies {
-        classpath("cz.eman.swagger:swagger-codegen:2.1.1")
+        classpath("cz.eman.swagger:swagger-codegen:2.2.0")
     }
 }
 ```
@@ -56,6 +56,7 @@ configure<SwaggerCodeGenConfig> {
             "removeMinusTextInHeaderProperty" to true,
             "ignoreEndpointStartingSlash" to true,
             "generatePrimitiveTypeAlias" to false,
+            "arrayAsArrayList" to false,
             "apiPackage" to "cz.mypackage.service",
             "modelPackage" to "cz.mypackage.model"
             "removeOperationParams" to arrayOf("X-Access-Token", "Accept-Language", ...)
