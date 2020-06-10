@@ -8,7 +8,8 @@ import org.gradle.api.Task
  * Swagger codegen plugin used to generate API files from OpenAPI specification. It auto-hooks into "compileJava" and
  * "compileKotlin" process so there is no need to configure dependencies and gradle tasks (they are auto created).
  *
- * You can turn off auto hooking by settings [SwaggerCodeGenConfig.autoHook] to false.
+ * You can turn off auto hooking by settings [SwaggerCodeGenConfig.autoHook] to false. Java generation is disabled when
+ * Kotlin task exists, you can force generating it using [SwaggerCodeGenConfig.forceJava].
  *
  * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
  * @since 1.0.0
@@ -23,10 +24,13 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
 
         project.afterEvaluate {
             if (configsExt.autoHook) {
-                val compileKotlinTask = project.getTasksByName("compileJava", false).first()
-                configsExt.configs.forEach { taskConfig ->
-                    createGenerator(project, "java", configsExt, taskConfig)?.let { task ->
-                        compileKotlinTask.dependsOn(task)
+                val compileKotlinTask = project.getTasksByName("compileKotlin", false).first()
+                if (compileKotlinTask == null || configsExt.forceJava) {
+                    val compileJavaTask = project.getTasksByName("compileJava", false).first()
+                    configsExt.configs.forEach { taskConfig ->
+                        createGenerator(project, "java", configsExt, taskConfig)?.let { task ->
+                            compileJavaTask.dependsOn(task)
+                        }
                     }
                 }
             }

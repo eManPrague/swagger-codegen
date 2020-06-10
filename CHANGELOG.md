@@ -1,12 +1,20 @@
 Change Log
 ==========
 
+## 2.2.1 (2020-05-10)
+
+### Added:
+- Added option to force java compilation.
+
+### Changed:
+- Does not trigger java tasks when compileKotlin is in the project.
+
 ## 2.2.0 (2020-05-05)
 
 ### Added:
 - Option to represent Array as ArrayList.
 
-### Fixed
+### Fixed:
 - Data type for type alias pointing to Maps and Arrays.
 - Task additional properties are cleaned properly before each task. Custom properties are removed properly.
 

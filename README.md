@@ -75,6 +75,8 @@ configure<SwaggerCodeGenConfig> {
 - `outputPath` - specify output directory
 - `setLibrary` - sets library to generate. Can be either "retrofit2" or "room". Default is "retrofit2".
 - `generatorName` - name or class of supported generator
+- `autoHook` - enables to auto hook generation task to compileKotlin or compileJava (default: true).
+- `forceJava` - forces java compilation when compileKotlin is present (default: false).
 - `configs` - specify input files, output directory and library
 - AdditionalProperties:
     - `templateEngine` - Currently this generator is supporting only `mustache`. Support of `handlebars` is in a progress. 
