@@ -16,6 +16,11 @@ import org.openapitools.codegen.config.Context
  * Input spec path is generated as follows: [sourcePath]/[SwaggerCodeGenTaskConfig.inputFileName].
  * Output dir is generated as follows: [outputPath]/[SwaggerCodeGenTaskConfig.outputFolderName].
  *
+ * Other configuration options:
+ * - [autoHook] enables to auto-hook compilation tasks to compileJava or compileKotlin. When compileKotlin is present
+ *   compileJava part does not run but it can be forced using [forceJava].
+ * - [forceJava] forces java compilation when compileKotlin is present.
+ *
  * @author eMan s.r.o. (info@eman.cz)
  */
 open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
@@ -26,6 +31,7 @@ open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
     var outputPath = "./"
     var configs = listOf<SwaggerCodeGenTaskConfig>()
     var autoHook = true
+    var forceJava = false
     private var additionalPropertiesCopy: MutableMap<String, Any> = HashMap()
     private var additionalPropertiesAddedKeys: MutableSet<String> = mutableSetOf()
 
