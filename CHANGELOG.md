@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-## 2.2.1 (2020-05-10)
+## 2.2.1 (2020-06-16)
 
 ### Added:
 - Added option to force java compilation.
