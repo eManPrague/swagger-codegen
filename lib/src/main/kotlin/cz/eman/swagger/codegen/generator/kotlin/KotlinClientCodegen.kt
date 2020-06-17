@@ -89,6 +89,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         initSettings()
         initHeaders()
         addLibraries()
+        addReservedWords()
     }
 
     override fun addMustacheLambdas(): ImmutableMap.Builder<String, Mustache.Lambda> {
@@ -440,6 +441,16 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         libraryOption.default = JVM_RETROFIT2
         cliOptions.add(libraryOption)
         setLibrary(JVM_RETROFIT2)
+    }
+
+    /**
+     * Adds additional reserved words into the generator.
+     *
+     * @since 2.2.2
+     */
+    private fun addReservedWords() {
+        reservedWords.add("internal")
+        reservedWords.add("external")
     }
 
     /**
