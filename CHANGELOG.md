@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+## 2.2.2 (TBD)
+
+### Added:
+- Added additional Kotlin keywords to be escaped (internal, external).
+
 ## 2.2.1 (2020-06-16)
 
 ### Added:
