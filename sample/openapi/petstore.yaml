@@ -86,6 +86,7 @@ components:
       required:
         - id
         - name
+        - birthday
       properties:
         id:
           type: integer
@@ -94,6 +95,12 @@ components:
           type: string
         tag:
           type: string
+        birthday:
+          type: string
+          format: date
+        registration:
+          type: string
+          format: date-time
     Pets:
       type: array
       items:
