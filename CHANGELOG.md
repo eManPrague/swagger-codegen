@@ -1,7 +1,15 @@
 Change Log
 ==========
 
-## 2.2.2 (TBD)
+## 2.2.3 (TBD)
+
+### Added:
+- Auto-hook support for Kotlin MPP.
+
+### Fixed:
+- Auto-hook empty collection when searching for compileKotlin or compileJava.
+
+## 2.2.2 (2020-06-17)
 
 ### Added:
 - Added additional Kotlin keywords to be escaped (internal, external).

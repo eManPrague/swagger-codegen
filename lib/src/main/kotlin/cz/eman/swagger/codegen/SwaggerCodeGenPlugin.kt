@@ -3,6 +3,8 @@ package cz.eman.swagger.codegen
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Swagger codegen plugin used to generate API files from OpenAPI specification. It auto-hooks into "compileJava" and
@@ -15,37 +17,79 @@ import org.gradle.api.Task
  * @since 1.0.0
  */
 open class SwaggerCodeGenPlugin : Plugin<Project> {
-    companion object TaskNames {
+    companion object {
+        val logger: Logger = LoggerFactory.getLogger(SwaggerCodeGenPlugin::class.java)
+
         const val SWAGGER_TASK = "swagger"
+        const val COMPILE_KOTLIN = "compileKotlin"
+        const val COMPILE_KOTLIN_JVM = "compileKotlinJvm"
+        const val COMPILE_JAVA = "compileJava"
+        const val LANGUAGE_KOTLIN = "kotlin"
+        const val LANGUAGE_JAVA = "java"
     }
 
     override fun apply(project: Project) {
         val configsExt = project.extensions.create(SWAGGER_TASK, SwaggerCodeGenConfig::class.java)
+        autoHookJava(project, configsExt)
+        autoHookKotlin(project, configsExt)
+        autoHookKotlin(project, configsExt, true)
+    }
 
+    /**
+     * Auto-hooks openApi generation to project that contain compile task [COMPILE_JAVA] and do not contain
+     * [COMPILE_KOTLIN] (only if java is not forced). Finds the task and crates java generator task for it with
+     * dependency.
+     *
+     * @param project used to search for compile tasks
+     * @param configsExt swagger gen config
+     */
+    private fun autoHookJava(project: Project, configsExt: SwaggerCodeGenConfig) {
+        var hooked = false
         project.afterEvaluate {
             if (configsExt.autoHook) {
-                val compileKotlinTask = project.getTasksByName("compileKotlin", false).first()
+                val compileKotlinTask = project.getTasksByName(COMPILE_KOTLIN, false).firstOrNull()
                 if (compileKotlinTask == null || configsExt.forceJava) {
-                    val compileJavaTask = project.getTasksByName("compileJava", false).first()
+                    project.getTasksByName(COMPILE_JAVA, false).firstOrNull()?.let { compileJava ->
+                        configsExt.configs.forEach { taskConfig ->
+                            createGenerator(project, LANGUAGE_JAVA, configsExt, taskConfig)?.let { task ->
+                                compileJava.dependsOn(task)
+                            }
+                        }
+                        hooked = true
+                    }
+                }
+            }
+        }
+        logger.info("Java auto-hooked: $hooked")
+    }
+
+    /**
+     * Auto-hooks openApi generation to project that contain compile task [COMPILE_KOTLIN] or [COMPILE_KOTLIN_JVM].
+     * Finds the task and crates java generator task for it with dependency.
+     *
+     * @param project used to search for compile tasks
+     * @param configsExt swagger gen config
+     */
+    private fun autoHookKotlin(project: Project, configsExt: SwaggerCodeGenConfig, isMpp: Boolean = false) {
+        var hooked = false
+        project.afterEvaluate {
+            if (configsExt.autoHook) {
+                val compileTaskName = if (isMpp) {
+                    COMPILE_KOTLIN_JVM
+                } else {
+                    COMPILE_KOTLIN
+                }
+                project.getTasksByName(compileTaskName, false).firstOrNull()?.let { compileKotlin ->
                     configsExt.configs.forEach { taskConfig ->
-                        createGenerator(project, "java", configsExt, taskConfig)?.let { task ->
-                            compileJavaTask.dependsOn(task)
+                        createGenerator(project, LANGUAGE_KOTLIN, configsExt, taskConfig)?.let { task ->
+                            compileKotlin.dependsOn(task)
                         }
                     }
+                    hooked = true
                 }
             }
         }
-
-        project.afterEvaluate {
-            if (configsExt.autoHook) {
-                val compileKotlinTask = project.getTasksByName("compileKotlin", false).first()
-                configsExt.configs.forEach { taskConfig ->
-                    createGenerator(project, "kotlin", configsExt, taskConfig)?.let { task ->
-                        compileKotlinTask.dependsOn(task)
-                    }
-                }
-            }
-        }
+        logger.info("Kotlin (isMpp: $isMpp) auto-hooked: $hooked")
     }
 
     /**
@@ -82,7 +126,7 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
      * @return [String] with task name
      */
     private fun buildTaskName(language: String, taskOutputFolder: String?) = buildString {
-        append("swagger")
+        append(SWAGGER_TASK)
         append("-$language")
         taskOutputFolder?.let { append("-$it") }
     }
