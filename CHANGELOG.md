@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-## 2.2.3 (TBD)
+## 2.2.3 (2020-08-31)
 
 ### Added:
 - Auto-hook support for Kotlin MPP.
