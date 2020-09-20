@@ -5,12 +5,10 @@ import org.gradle.kotlin.dsl.*
 import org.gradle.api.tasks.bundling.Jar
 
 plugins {
-    id("java-library")
+    id("java-gradle-plugin")
     kotlin("jvm")
     id("org.jetbrains.dokka")
-    id("java-gradle-plugin")
     id("maven-publish")
-    id("maven")
     id("com.jfrog.bintray")
 }
 
