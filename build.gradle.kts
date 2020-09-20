@@ -19,6 +19,7 @@ allprojects {
         maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
     }
 
+    group = Artifact.groupId
 }
 
 tasks.create<Delete>("clean") {

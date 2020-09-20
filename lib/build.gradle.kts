@@ -29,18 +29,18 @@ val dokka by tasks.getting(DokkaTask::class) {
     outputFormat = "html"
     outputDirectory = "$buildDir/dokka/html"
     configuration {
-        moduleName = "lib"
+        moduleName = Artifact.artifactId
     }
 }
 
-tasks.create<Jar>("sourcesJar") {
-    from(files("src/main/kotlin"))
+val sourcesJar by tasks.creating(Jar::class) {
     archiveClassifier.set("sources")
+    from(files("src/main/kotlin"))
 }
 
-tasks.create<Jar>("dokkaHtmlJar") {
+val dokkaHtmlJar by tasks.creating(Jar::class) {
     archiveClassifier.set("kdoc-html")
-    from("$buildDir/dokka/html")
+    from(dokka.outputDirectory)
     dependsOn(dokka)
 }
 
@@ -53,15 +53,27 @@ gradlePlugin {
     }
 }
 
-group = Artifact.groupId
+val releasePublication = "release"
+publishing {
+    publications {
+        create<MavenPublication>(releasePublication) {
+            artifactId = Artifact.artifactId
+            from(components["java"])
+            artifact(sourcesJar)
+            artifact(dokkaHtmlJar)
+        }
+    }
 
-val productionPublicName = "production"
+    repositories {
+        maven(url = "https://dl.bintray.com/emanprague/maven") { name = "bintray" }
+    }
+}
 
 bintray {
     user = findPropertyOrNull("bintray.user")
     key = findPropertyOrNull("bintray.apikey")
     publish = true
-    setPublications(productionPublicName)
+    setPublications(releasePublication)
     pkg(delegateClosureOf<BintrayExtension.PackageConfig> {
         repo = "maven"
         name = "cz.eman.swagger.codegen"
@@ -83,19 +95,4 @@ bintray {
         setLicenses("MIT")
         desc = description
     })
-}
-
-publishing {
-    publications {
-        register("production", MavenPublication::class) {
-            artifactId = Artifact.artifactId
-            from(components["java"])
-            artifact(tasks["sourcesJar"])
-            artifact(tasks["dokkaHtmlJar"])
-        }
-    }
-
-    repositories {
-        maven(url = "http://dl.bintray.com/emanprague/maven")
-    }
 }
