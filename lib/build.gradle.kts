@@ -61,6 +61,32 @@ publishing {
             from(components["java"])
             artifact(sourcesJar)
             artifact(dokkaHtmlJar)
+
+            pom {
+                name.set("Swagger Codegen")
+                description.set("A fork of the swagger-codegen by eMan")
+                url.set("https://github.com/eManPrague/swagger-codegen")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+
+                developers {
+                    developer {
+                        name.set("eMan a.s.")
+                        email.set("info@eman.cz")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/eManPrague/swagger-codegen.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/eManPrague/swagger-codegen.git")
+                    url.set("https://github.com/eManPrague/swagger-codegen")
+                }
+            }
         }
     }
 
