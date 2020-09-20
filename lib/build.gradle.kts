@@ -1,8 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.dokka.gradle.DokkaTask
 import com.jfrog.bintray.gradle.BintrayExtension
-import org.gradle.kotlin.dsl.*
-import org.gradle.api.tasks.bundling.Jar
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java-gradle-plugin")
@@ -13,19 +11,12 @@ plugins {
 }
 
 dependencies {
-//    implementation(fileTree(args = *arrayOf(Pair("dir", "libs"), Pair("include", arrayOf("*.jar")))))
     implementation(gradleApi())
-
-    // Kotlin
     implementation(Dependencies.Kotlin.kotlinStbLib)
-
-    // OpenAPI
     implementation(Dependencies.Libs.openApiCodegen)
 
-    // Tests
     testImplementation(Dependencies.TestLibs.junit)
     testImplementation(Dependencies.TestLibs.kotlinTest)
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<KotlinCompile> {
@@ -35,7 +26,7 @@ tasks.withType<KotlinCompile> {
 }
 
 val dokka by tasks.getting(DokkaTask::class) {
-    outputFormat = "html" // html, md, javadoc,
+    outputFormat = "html"
     outputDirectory = "$buildDir/dokka/html"
     configuration {
         moduleName = "lib"
@@ -63,7 +54,6 @@ gradlePlugin {
 }
 
 group = Artifact.groupId
-version = "${project.version}"
 
 val productionPublicName = "production"
 
@@ -102,15 +92,10 @@ publishing {
             from(components["java"])
             artifact(tasks["sourcesJar"])
             artifact(tasks["dokkaHtmlJar"])
-            //artifact(sourcesJar.get())
         }
     }
 
     repositories {
         maven(url = "http://dl.bintray.com/emanprague/maven")
     }
-}
-
-repositories {
-    mavenCentral()
 }
