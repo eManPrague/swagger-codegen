@@ -48,6 +48,7 @@ configure<SwaggerCodeGenConfig> {
             "enumPropertyNaming" to "UPPERCASE",
             "modelNameSuffix" to "Dto",
             "apiNameSuffix" to "Service",
+            "generateApi" to true,
             "generateInfrastructure" to false,
             "emptyDataClasses" to false,
             "composedArrayAsAny" to true,
@@ -82,7 +83,8 @@ configure<SwaggerCodeGenConfig> {
     - `templateEngine` - Currently this generator is supporting only `mustache`. Support of `handlebars` is in a progress. 
     - `dateLibrary` - By this property you can set date library used to serialize dates and times.
     - `enumPropertyNaming` - By this property you can change enum property naming style. ("camelCase", "PascalCase", "snake_case", "original", "UPPERCASE")
-    - `generateInfrastructure` - By this property you can enable to generate API infrastructure.
+    - `generateApi` - By this property you can enable/disable to generate API with infrastructure. If you set to false, only a model classes will be generated.
+    - `generateInfrastructure` - By this property you can enable to generate API infrastructure. If property `generateApi=false`, then this property is ignored.
     - `collectionType` - By this property cou can change collection type.
     - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
     - `generateAliasAsModel` - By this property you can generate alias (array, map) as model.
