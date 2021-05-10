@@ -2,12 +2,43 @@ package cz.eman.swagger.codegen.generator.kotlin
 
 import com.google.common.collect.ImmutableMap
 import com.samskivert.mustache.Mustache
-import cz.eman.swagger.codegen.language.*
+import cz.eman.swagger.codegen.language.ARRAY_AS_ARRAY_LIST
+import cz.eman.swagger.codegen.language.ARRAY_AS_ARRAY_LIST_DESCRIPTION
+import cz.eman.swagger.codegen.language.COMPOSED_ARRAY_ANY
+import cz.eman.swagger.codegen.language.COMPOSED_ARRAY_ANY_DESCRIPTION
+import cz.eman.swagger.codegen.language.COMPOSED_VARS_NOT_REQUIRED
+import cz.eman.swagger.codegen.language.COMPOSED_VARS_NOT_REQUIRED_DESCRIPTION
+import cz.eman.swagger.codegen.language.EMPTY_DATA_CLASS
+import cz.eman.swagger.codegen.language.EMPTY_DATA_CLASS_DESCRIPTION
+import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API
+import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API_DESCRIPTION
+import cz.eman.swagger.codegen.language.GENERATE_PRIMITIVE_TYPE_ALIAS
+import cz.eman.swagger.codegen.language.GENERATE_PRIMITIVE_TYPE_ALIAS_DESCRIPTION
+import cz.eman.swagger.codegen.language.HEADER_CLI
+import cz.eman.swagger.codegen.language.HEADER_CLI_DESCRIPTION
+import cz.eman.swagger.codegen.language.REMOVE_ENDPOINT_STARTING_SLASH
+import cz.eman.swagger.codegen.language.REMOVE_ENDPOINT_STARTING_SLASH_DESCRIPTION
+import cz.eman.swagger.codegen.language.REMOVE_MINUS_TEXT_FROM_HEADER
+import cz.eman.swagger.codegen.language.REMOVE_MINUS_TEXT_FROM_HEADER_DESCRIPTION
+import cz.eman.swagger.codegen.language.REMOVE_OPERATION_PARAMS
+import cz.eman.swagger.codegen.language.REMOVE_OPERATION_PARAMS_DESCRIPTION
 import cz.eman.swagger.codegen.templating.mustache.IgnoreStartingSlashLambda
 import cz.eman.swagger.codegen.templating.mustache.RemoveMinusTextFromNameLambda
-import io.swagger.v3.oas.models.media.*
+import io.swagger.v3.oas.models.media.ArraySchema
+import io.swagger.v3.oas.models.media.ComposedSchema
+import io.swagger.v3.oas.models.media.MapSchema
+import io.swagger.v3.oas.models.media.ObjectSchema
+import io.swagger.v3.oas.models.media.Schema
+import io.swagger.v3.oas.models.media.StringSchema
 import org.gradle.util.CollectionUtils.sort
-import org.openapitools.codegen.*
+import org.openapitools.codegen.CliOption
+import org.openapitools.codegen.CodegenConstants
+import org.openapitools.codegen.CodegenModel
+import org.openapitools.codegen.CodegenOperation
+import org.openapitools.codegen.CodegenParameter
+import org.openapitools.codegen.CodegenProperty
+import org.openapitools.codegen.CodegenType
+import org.openapitools.codegen.SupportingFile
 import org.openapitools.codegen.languages.AbstractKotlinCodegen
 import org.openapitools.codegen.utils.ModelUtils
 import org.slf4j.Logger
@@ -146,6 +177,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         processOptsAdditionalSupportingFiles()
         processOptsAdditional()
         applyOptions()
+        processOptsForMultiplatform()
     }
 
     /**
@@ -522,6 +554,34 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         if (additionalProperties.containsKey(ARRAY_AS_ARRAY_LIST)) {
             arrayAsArrayList = convertPropertyToBooleanAndWriteBack(ARRAY_AS_ARRAY_LIST)
         }
+    }
+
+    /**
+     * Processes options for the Kotlin multiplatform development. It will apply and multiplatform specific opts only
+     * if:
+     * ```
+     * setLibrary("multiplatform")
+     * ```
+     *
+     * @since 2.2.4
+     */
+    private fun processOptsForMultiplatform() {
+        if (MULTIPLATFORM == getLibrary()) {
+            processKotlinxDateTimeLibrary()
+        }
+    }
+
+    private fun processKotlinxDateTimeLibrary() {
+        additionalProperties[DateLibrary.JAVA8.value] = false
+        additionalProperties[DateLibrary.JAVA8_LOCALDATETIME.value] = false
+        additionalProperties[DateLibrary.STRING.value] = false
+        additionalProperties[DateLibrary.THREETENBP.value] = false
+        additionalProperties[DateLibrary.THREETENBP_LOCALDATETIME.value] = false
+        typeMapping["local-date-time"] = "kotlinx.datetime.LocalDateTime"
+        typeMapping["date-time"] = "kotlinx.datetime.LocalDateTime"
+        typeMapping["DateTime"] = "LocalDateTime"
+        importMapping["LocalDateTime"] = "kotlinx.datetime.LocalDateTime"
+        importMapping["LocalDate"] = "kotlinx.datetime.LocalDate"
     }
 
     /**
