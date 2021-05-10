@@ -1,5 +1,9 @@
 Change Log
 ==========
+## 2.2.4 (TBD)
+
+### Added:
+- Support for Kotlin Multiplatform `kotlinx.datetime` date library
 
 ## 2.2.3 (2020-08-31)
 
