@@ -1,33 +1,22 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.dokka.gradle.DokkaTask
 import com.jfrog.bintray.gradle.BintrayExtension
-import org.gradle.kotlin.dsl.*
-import org.gradle.api.tasks.bundling.Jar
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("java-library")
+    id("java-gradle-plugin")
     kotlin("jvm")
     id("org.jetbrains.dokka")
-    id("java-gradle-plugin")
     id("maven-publish")
-    id("maven")
     id("com.jfrog.bintray")
 }
 
 dependencies {
-//    implementation(fileTree(args = *arrayOf(Pair("dir", "libs"), Pair("include", arrayOf("*.jar")))))
     implementation(gradleApi())
-
-    // Kotlin
     implementation(Dependencies.Kotlin.kotlinStbLib)
-
-    // OpenAPI
     implementation(Dependencies.Libs.openApiCodegen)
 
-    // Tests
     testImplementation(Dependencies.TestLibs.junit)
     testImplementation(Dependencies.TestLibs.kotlinTest)
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<KotlinCompile> {
@@ -37,21 +26,21 @@ tasks.withType<KotlinCompile> {
 }
 
 val dokka by tasks.getting(DokkaTask::class) {
-    outputFormat = "html" // html, md, javadoc,
+    outputFormat = "html"
     outputDirectory = "$buildDir/dokka/html"
     configuration {
-        moduleName = "lib"
+        moduleName = Artifact.artifactId
     }
 }
 
-tasks.create<Jar>("sourcesJar") {
-    from(files("src/main/kotlin"))
+val sourcesJar by tasks.creating(Jar::class) {
     archiveClassifier.set("sources")
+    from(files("src/main/kotlin"))
 }
 
-tasks.create<Jar>("dokkaHtmlJar") {
+val dokkaHtmlJar by tasks.creating(Jar::class) {
     archiveClassifier.set("kdoc-html")
-    from("$buildDir/dokka/html")
+    from(dokka.outputDirectory)
     dependsOn(dokka)
 }
 
@@ -64,16 +53,53 @@ gradlePlugin {
     }
 }
 
-group = Artifact.groupId
-version = "${project.version}"
+val releasePublication = "release"
+publishing {
+    publications {
+        create<MavenPublication>(releasePublication) {
+            artifactId = Artifact.artifactId
+            from(components["java"])
+            artifact(sourcesJar)
+            artifact(dokkaHtmlJar)
 
-val productionPublicName = "production"
+            pom {
+                name.set("Swagger Codegen")
+                description.set("A fork of the swagger-codegen by eMan")
+                url.set("https://github.com/eManPrague/swagger-codegen")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+
+                developers {
+                    developer {
+                        name.set("eMan a.s.")
+                        email.set("info@eman.cz")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/eManPrague/swagger-codegen.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/eManPrague/swagger-codegen.git")
+                    url.set("https://github.com/eManPrague/swagger-codegen")
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven(url = "https://dl.bintray.com/emanprague/maven") { name = "bintray" }
+    }
+}
 
 bintray {
     user = findPropertyOrNull("bintray.user")
     key = findPropertyOrNull("bintray.apikey")
     publish = true
-    setPublications(productionPublicName)
+    setPublications(releasePublication)
     pkg(delegateClosureOf<BintrayExtension.PackageConfig> {
         repo = "maven"
         name = "cz.eman.swagger.codegen"
@@ -95,24 +121,4 @@ bintray {
         setLicenses("MIT")
         desc = description
     })
-}
-
-publishing {
-    publications {
-        register("production", MavenPublication::class) {
-            artifactId = Artifact.artifactId
-            from(components["java"])
-            artifact(tasks["sourcesJar"])
-            artifact(tasks["dokkaHtmlJar"])
-            //artifact(sourcesJar.get())
-        }
-    }
-
-    repositories {
-        maven(url = "http://dl.bintray.com/emanprague/maven")
-    }
-}
-
-repositories {
-    mavenCentral()
 }
