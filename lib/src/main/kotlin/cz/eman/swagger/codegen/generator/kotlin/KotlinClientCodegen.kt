@@ -10,6 +10,8 @@ import cz.eman.swagger.codegen.language.COMPOSED_VARS_NOT_REQUIRED
 import cz.eman.swagger.codegen.language.COMPOSED_VARS_NOT_REQUIRED_DESCRIPTION
 import cz.eman.swagger.codegen.language.EMPTY_DATA_CLASS
 import cz.eman.swagger.codegen.language.EMPTY_DATA_CLASS_DESCRIPTION
+import cz.eman.swagger.codegen.language.GENERATE_API
+import cz.eman.swagger.codegen.language.GENERATE_API_DESCRIPTION
 import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API
 import cz.eman.swagger.codegen.language.GENERATE_INFRASTRUCTURE_API_DESCRIPTION
 import cz.eman.swagger.codegen.language.GENERATE_PRIMITIVE_TYPE_ALIAS
@@ -59,7 +61,8 @@ import java.io.File
  *
  * Additional generator options:
  * - `dateLibrary` - By this property you can set date library used to serialize dates and times.
- * - `generateInfrastructure` - By this property you can enable to generate API infrastructure.
+ * - `generateApi` - By this property you can enable/disable to generate API with infrastructure. If you set to false, only a model classes will be generated. Default is true
+ * - `generateInfrastructure` - By this property you can enable to generate API infrastructure. If property `generateApi=false`, then this property is ignored.
  * - `collectionType` - By this property cou can change collection type.
  * - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
  * - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
@@ -173,6 +176,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     override fun processOpts() {
         super.processOpts()
+        processOptsApi()
         processOptsInfrastructure()
         processOptsAdditionalSupportingFiles()
         processOptsAdditional()
@@ -327,6 +331,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 2.0.0
      */
     private fun initSettings() {
+        initSettingsApi()
         initSettingsInfrastructure()
         initSettingsEmptyDataClass()
         initSettingsComposedArrayAny()
@@ -352,6 +357,22 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         infrastructureCli.enum = infraOptions
 
         cliOptions.add(infrastructureCli)
+    }
+
+    /**
+     * Settings used to generate api with infrastructure or without both of them.
+     *
+     * @since 2.2.4
+     */
+    private fun initSettingsApi() {
+        val apiCli = CliOption(GENERATE_API, GENERATE_API_DESCRIPTION)
+        val infraOptions = HashMap<String, String>()
+        infraOptions[GenerateApiType.API.value] = "Generate API"
+        infraOptions[EndpointsCommands.INGORE_ENDPOINT_STARTING_SLASH.value] =
+            REMOVE_ENDPOINT_STARTING_SLASH_DESCRIPTION
+        apiCli.enum = infraOptions
+
+        cliOptions.add(apiCli)
     }
 
     /**
@@ -499,6 +520,28 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
 
         if (!generateInfrastructure) {
             supportingFiles.clear()
+        }
+    }
+
+    /**
+     * Processes options for API generated classes. Removes all API template files from the generation isf this
+     * option is set to false (do not generate API). For more information see [initSettingsInfrastructure].
+     *
+     * @since 2.2.4
+     */
+    private fun processOptsApi() {
+        var generateApi = true
+        if (additionalProperties.containsKey(GENERATE_API)) {
+            generateApi = convertPropertyToBooleanAndWriteBack(GENERATE_API)
+        }
+
+        if (!generateApi) {
+            apiDocTemplateFiles.clear()
+            apiTemplateFiles.clear()
+            if (additionalProperties.containsKey(GENERATE_API)) {
+                additionalProperties[GENERATE_INFRASTRUCTURE_API] = false
+                // The processOptsInfrastructure() function should be called after thsi function
+            }
         }
     }
 

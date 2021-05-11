@@ -3,6 +3,8 @@ Change Log
 ## 2.2.4 (TBD)
 
 ### Added:
+- (Kotlin) Add a new parameter `generateApi` you can enable/disable to generate API with infrastructure. 
+  If you set it to false, only model classes will be generated.
 - Support for Kotlin Multiplatform `kotlinx.datetime` date library
 
 ## 2.2.3 (2020-08-31)

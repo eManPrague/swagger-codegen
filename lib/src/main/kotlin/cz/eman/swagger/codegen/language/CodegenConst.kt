@@ -7,6 +7,9 @@ package cz.eman.swagger.codegen.language
 const val GENERATE_INFRASTRUCTURE_API = "generateInfrastructure"
 const val GENERATE_INFRASTRUCTURE_API_DESCRIPTION = "Option to add infrastructure package"
 
+const val GENERATE_API = "generateApi"
+const val GENERATE_API_DESCRIPTION = "Option to add api generated classes"
+
 const val EMPTY_DATA_CLASS = "emptyDataClasses"
 const val EMPTY_DATA_CLASS_DESCRIPTION = "Option to allow empty data classes (default: false)."
 
