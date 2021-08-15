@@ -2,6 +2,7 @@ package cz.eman.swagger.codegen
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.openapitools.codegen.DefaultGenerator
@@ -21,6 +22,7 @@ open class SwaggerCodeGenTask : DefaultTask() {
     /**
      * Ideally this would be marked as an input to this task however I need to fix some things around how it is implemented.
      */
+    @Internal
     var configuration = CodegenConfigurator()
 
     /**
