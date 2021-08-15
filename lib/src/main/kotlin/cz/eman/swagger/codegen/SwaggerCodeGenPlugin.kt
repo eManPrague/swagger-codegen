@@ -51,7 +51,12 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
                 if (compileKotlinTask == null || configsExt.forceJava) {
                     project.getTasksByName(COMPILE_JAVA, false).firstOrNull()?.let { compileJava ->
                         configsExt.configs.forEach { taskConfig ->
-                            createGenerator(project, LANGUAGE_JAVA, configsExt, taskConfig)?.let { task ->
+                            createGenerator(
+                                project,
+                                LANGUAGE_JAVA,
+                                configsExt,
+                                taskConfig
+                            )?.let { task ->
                                 compileJava.dependsOn(task)
                             }
                         }
@@ -70,7 +75,11 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
      * @param project used to search for compile tasks
      * @param configsExt swagger gen config
      */
-    private fun autoHookKotlin(project: Project, configsExt: SwaggerCodeGenConfig, isMpp: Boolean = false) {
+    private fun autoHookKotlin(
+        project: Project,
+        configsExt: SwaggerCodeGenConfig,
+        isMpp: Boolean = false
+    ) {
         var hooked = false
         project.afterEvaluate {
             if (configsExt.autoHook) {
@@ -81,7 +90,12 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
                 }
                 project.getTasksByName(compileTaskName, false).firstOrNull()?.let { compileKotlin ->
                     configsExt.configs.forEach { taskConfig ->
-                        createGenerator(project, LANGUAGE_KOTLIN, configsExt, taskConfig)?.let { task ->
+                        createGenerator(
+                            project,
+                            LANGUAGE_KOTLIN,
+                            configsExt,
+                            taskConfig
+                        )?.let { task ->
                             compileKotlin.dependsOn(task)
                         }
                     }

@@ -62,12 +62,12 @@ open class SwaggerCodeGenTask : DefaultTask() {
             //config.isVerbose = true
 
             DefaultGenerator()
-                    .opts(config.toClientOptInput())
-                    .generate()
+                .opts(config.toClientOptInput())
+                .generate()
 
             // Clean up the system environment variables that have been set by the code generator.
             // https://github.com/swagger-api/swagger-codegen/issues/4788
-            ctx.workflowSettings.systemProperties.keys.forEach { System.clearProperty(it) }
+            ctx.workflowSettings.globalProperties.keys.forEach { System.clearProperty(it) }
         }
     }
 }
