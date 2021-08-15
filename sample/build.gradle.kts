@@ -1,4 +1,3 @@
-// import org.jetbrains.dokka.gradle.DokkaTask
 import cz.eman.swagger.codegen.SwaggerCodeGenConfig
 import cz.eman.swagger.codegen.SwaggerCodeGenTaskConfig
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
