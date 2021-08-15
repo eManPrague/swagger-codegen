@@ -1,6 +1,11 @@
 Change Log
 ==========
-## 2.2.4 (TBD)
+
+## 2.3.0 (TBD)
+
+### Updated:
+- All dependencies.
+- Gradle to 7.1.1.
 
 ### Added:
 - Support for Kotlin Multiplatform `kotlinx.datetime` date library

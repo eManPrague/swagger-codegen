@@ -16,13 +16,17 @@ dependencies {
     implementation(Dependencies.Libs.openApiCodegen)
 
     testImplementation(Dependencies.TestLibs.junit)
-    testImplementation(Dependencies.TestLibs.kotlinTest)
+    testImplementation(Dependencies.TestLibs.kotest)
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 val dokka by tasks.getting(DokkaTask::class) {
