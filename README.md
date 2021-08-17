@@ -1,23 +1,48 @@
 # OpenApi 3 Codegen / Swagger
 
-[ ![Download](https://nexus.eman.cz/repository/maven-public/cz/eman/swagger/swagger-codegen/2.3.0/swagger-codegen-2.3.0.jar) ](https://nexus.eman.cz/#browse/browse:maven-public:cz%2Feman%2Fswagger%2Fswagger-codegen)
+[![Latest version](https://img.shields.io/github/v/release/eManPrague/swagger-codegen)](https://github.com/eManPrague/swagger-codegen/releases/tag/v2.3.0)
 
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
 ### How to use it?
 
+### Usage
+
+:warning: The artifacts were moved from JCenter.
+
 ### Gradle
 
-#### 1. Add jCenter and codegen dependency
+#### 1. Add eMan Nexus and codegen dependency
+
+All artifacts are available and distributed using the [eMan Nexus](https://nexus.eman.cz/service/rest/repository/browse/maven-public/) repository.
+Add the repository to project `build.gradle.kts` (`build.gradle`) file.
+
 ```kotlin
 buildscript {
+
     repositories {
-        jcenter()
+        ...
+        maven(url = "https://nexus.eman.cz/repository/maven-public")
     }
 
-    // Kotlin Gradle DSL
     dependencies {
+        ...
         classpath("cz.eman.swagger:swagger-codegen:2.3.0")
+    }
+}
+```
+
+```groovy
+buildscript {
+
+    repositories {
+        ...
+        maven { url 'https://nexus.eman.cz/repository/maven-public' }
+    }
+
+    dependencies {
+        ...
+        classpath 'cz.eman.swagger:swagger-codegen:2.3.0'
     }
 }
 ```
