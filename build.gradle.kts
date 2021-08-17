@@ -1,7 +1,6 @@
 buildscript {
     repositories {
         mavenCentral()
-        mavenLocal() // TODO: remove - dev only
         maven("https://nexus.eman.cz/repository/maven-public")
     }
 
@@ -15,7 +14,6 @@ buildscript {
 allprojects {
     repositories {
         mavenCentral()
-        mavenLocal() // TODO: remove - dev only
         maven("https://nexus.eman.cz/repository/maven-public")
     }
 
