@@ -17,7 +17,7 @@ dependencies {
 }
 
 gradlePlugin {
-    isAutomatedPublishing = false
+
 }
 
 tasks.withType<KotlinCompile> {
@@ -45,10 +45,12 @@ val dokkaHtmlJar by tasks.creating(Jar::class) {
 gradlePlugin {
     plugins {
         register("swagger-codegen-plugin") {
-            id = "swagger-codegen"
+            group = Artifact.groupId
+            id = Artifact.artifactId
             implementationClass = "cz.eman.swagger.codegen.SwaggerCodeGenPlugin"
         }
     }
+    isAutomatedPublishing = false
 }
 
 publishing {
