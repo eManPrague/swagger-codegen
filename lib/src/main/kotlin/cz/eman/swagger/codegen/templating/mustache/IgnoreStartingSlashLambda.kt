@@ -15,7 +15,7 @@ import java.io.Writer
  *
  * For instance if _paramName=/v1/api/nice_ so result will be _v1/api/nice_
  *
- * @author eMan s.r.o.
+ * @author eMan a.s. (info@eman.cz)
  * @since 2.0.0
  * @see[Mustache.Lambda]
  */

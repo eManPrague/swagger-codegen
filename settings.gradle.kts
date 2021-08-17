@@ -1,7 +1,4 @@
 rootProject.buildFileName = "build.gradle.kts"
 
-include(
-        ":lib",
-        ":sample"
-)
+include(":lib", ":sample")
 

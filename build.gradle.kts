@@ -1,22 +1,20 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
+        maven("https://nexus.eman.cz/repository/maven-public")
     }
 
     dependencies {
         classpath(GradlePlugins.kotlin)
         classpath(GradlePlugins.dokka)
-        classpath(GradlePlugins.bintrayGradle)
         classpath(Dependencies.GradlePlugins.swaggerCodeGen)
     }
 }
 
 allprojects {
     repositories {
-        jcenter()
-
-        // For OpenApi generator snapshot
-        maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
+        mavenCentral()
+        maven("https://nexus.eman.cz/repository/maven-public")
     }
 
     group = Artifact.groupId

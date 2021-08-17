@@ -30,12 +30,10 @@ import io.swagger.v3.oas.models.media.MapSchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
 import io.swagger.v3.oas.models.media.StringSchema
-import org.gradle.util.CollectionUtils.sort
 import org.openapitools.codegen.CliOption
 import org.openapitools.codegen.CodegenConstants
 import org.openapitools.codegen.CodegenModel
 import org.openapitools.codegen.CodegenOperation
-import org.openapitools.codegen.CodegenParameter
 import org.openapitools.codegen.CodegenProperty
 import org.openapitools.codegen.CodegenType
 import org.openapitools.codegen.SupportingFile
@@ -44,7 +42,6 @@ import org.openapitools.codegen.utils.ModelUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
-
 
 /**
  * Kotlin client generator based on [AbstractKotlinCodegen]. Contains libraries and options that are not supported in
@@ -60,7 +57,6 @@ import java.io.File
  * Additional generator options:
  * - `dateLibrary` - By this property you can set date library used to serialize dates and times.
  * - `generateInfrastructure` - By this property you can enable to generate API infrastructure.
- * - `collectionType` - By this property cou can change collection type.
  * - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
  * - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
  * - `generatePrimitiveTypeAlias` - By this property aliases to primitive are also generated.
@@ -71,8 +67,7 @@ import java.io.File
  * - `arrayAsArrayList` - By this property you can forcefully represent Array as ArrayList which can be useful with complex schemas. Use with caution.
  * - `ignoreEndpointStartingSlash` - By this property you can ignore a starting slash from an endpoint definition if it is present.
  *
- * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
- * @author eMan s.r.o. (david.sucharda@eman.cz)
+ * @author eMan a.s. (info@eman.cz)
  * @since 2.0.0
  */
 open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClientCodegen() {
@@ -83,7 +78,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private var composedVarsNotRequired = false
     private var arrayAsArrayList = false
     private var removeOperationParams: List<String> = emptyList()
-    private val numberDataTypes = arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
+    private val numberDataTypes =
+        arrayOf("kotlin.Short", "kotlin.Int", "kotlin.Long", "kotlin.Float", "kotlin.Double")
 
     companion object {
         val logger: Logger = LoggerFactory.getLogger(KotlinClientCodegen::class.java)
@@ -91,7 +87,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         const val ROOM = "room"
         const val ROOM2 = "room2"
 
-        const val VENDOR_EXTENSION_BASE_NAME_LITERAL = "x-base-name-literal"
         const val VENDOR_EXTENSION_IS_ALIAS = "x-is-alias"
 
         const val TYPE_ARRAY_LIST = "ArrayList"
@@ -236,7 +231,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
             val mo = model as Map<*, *>
             (mo["model"] as CodegenModel?)?.let {
                 setModelVendorExtensions(it)
-                fixAllOfModelInheritance(it)
                 setComposedVarsAsNotRequired(it)
             }
         }
@@ -244,7 +238,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
-     * Post process operations with models to check if the operation is multipart ot not.
+     * Post process operations with models to check if the operation is multipart or not.
      *
      * @since 2.0.0
      */
@@ -275,8 +269,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
                             }
                         }
                     }
-
-                    sortAllParams(operation)
                 }
             }
         }
@@ -343,7 +335,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 2.0.0
      */
     private fun initSettingsInfrastructure() {
-        val infrastructureCli = CliOption(GENERATE_INFRASTRUCTURE_API, GENERATE_INFRASTRUCTURE_API_DESCRIPTION)
+        val infrastructureCli =
+            CliOption(GENERATE_INFRASTRUCTURE_API, GENERATE_INFRASTRUCTURE_API_DESCRIPTION)
         val infraOptions = HashMap<String, String>()
         infraOptions[GenerateApiType.INFRASTRUCTURE.value] = "Generate Infrastructure API"
         infraOptions[GenerateApiType.API.value] = "Generate API"
@@ -437,7 +430,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      * @since 2.0.0
      */
     private fun initSettingsRemoveOperationParams() {
-        val removeOperationParamsCli = CliOption(REMOVE_OPERATION_PARAMS, REMOVE_OPERATION_PARAMS_DESCRIPTION)
+        val removeOperationParamsCli =
+            CliOption(REMOVE_OPERATION_PARAMS, REMOVE_OPERATION_PARAMS_DESCRIPTION)
         cliOptions.add(removeOperationParamsCli)
     }
 
@@ -464,11 +458,12 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
      */
     private fun addLibraries() {
         supportedLibraries[ROOM] =
-            "Platform: Room v1. JSON processing: Moshi 1.9.2."
+            "Platform: Room v1. JSON processing: Moshi 1.12.0."
         supportedLibraries[ROOM2] =
-            "Platform: Room v2 (androidx). JSON processing: Moshi 1.9.2."
+            "Platform: Room v2 (androidx). JSON processing: Moshi 1.12.0."
 
-        val libraryOption = CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
+        val libraryOption =
+            CliOption(CodegenConstants.LIBRARY, "Library template (sub-template) to use")
         libraryOption.enum = supportedLibraries
         libraryOption.default = JVM_RETROFIT2
         cliOptions.add(libraryOption)
@@ -494,7 +489,8 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun processOptsInfrastructure() {
         var generateInfrastructure = false
         if (additionalProperties.containsKey(GENERATE_INFRASTRUCTURE_API)) {
-            generateInfrastructure = convertPropertyToBooleanAndWriteBack(GENERATE_INFRASTRUCTURE_API)
+            generateInfrastructure =
+                convertPropertyToBooleanAndWriteBack(GENERATE_INFRASTRUCTURE_API)
         }
 
         if (!generateInfrastructure) {
@@ -532,11 +528,13 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         }
 
         if (additionalProperties.containsKey(GENERATE_PRIMITIVE_TYPE_ALIAS)) {
-            generatePrimitiveTypeAlias = convertPropertyToBooleanAndWriteBack(GENERATE_PRIMITIVE_TYPE_ALIAS)
+            generatePrimitiveTypeAlias =
+                convertPropertyToBooleanAndWriteBack(GENERATE_PRIMITIVE_TYPE_ALIAS)
         }
 
         if (additionalProperties.containsKey(COMPOSED_VARS_NOT_REQUIRED)) {
-            composedVarsNotRequired = convertPropertyToBooleanAndWriteBack(COMPOSED_VARS_NOT_REQUIRED)
+            composedVarsNotRequired =
+                convertPropertyToBooleanAndWriteBack(COMPOSED_VARS_NOT_REQUIRED)
         }
 
         if (additionalProperties.containsKey(CodegenConstants.MODEL_NAME_SUFFIX)) {
@@ -544,11 +542,12 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         }
 
         if (additionalProperties.containsKey(REMOVE_OPERATION_PARAMS)) {
-            removeOperationParams = when (val tempArray = additionalProperties[REMOVE_OPERATION_PARAMS]) {
-                is Array<*> -> tempArray.mapNotNull { mapAnyToStringOrNull(it) }
-                is List<*> -> tempArray.mapNotNull { mapAnyToStringOrNull(it) }
-                else -> emptyList()
-            }
+            removeOperationParams =
+                when (val tempArray = additionalProperties[REMOVE_OPERATION_PARAMS]) {
+                    is Array<*> -> tempArray.mapNotNull { mapAnyToStringOrNull(it) }
+                    is List<*> -> tempArray.mapNotNull { mapAnyToStringOrNull(it) }
+                    else -> emptyList()
+                }
         }
 
         if (additionalProperties.containsKey(ARRAY_AS_ARRAY_LIST)) {
@@ -680,8 +679,7 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
-     * Sets vendor extensions to the model and it's properties. Extensions added: [markModelAsTypeAlias] and
-     * [escapePropertyBaseNameLiteral].
+     * Sets vendor extensions to the model and it's properties. Extensions added: [markModelAsTypeAlias].
      *
      * @param model to have extensions added
      * @since 2.0.0
@@ -695,30 +693,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
                 model.readWriteVars +
                 model.parentVars
         markModelAsTypeAlias(model, modelProperties.size)
-        escapePropertyBaseNameLiteral(modelProperties)
-    }
-
-    /**
-     * Fixes allOf model inheritance by removing parent and flattening all variables into the model.
-     * Related issues:
-     * - https://github.com/OpenAPITools/openapi-generator/issues/5876 (forced inheritance)
-     * - https://github.com/OpenAPITools/openapi-generator/pull/5396 (allVars instead of vars)
-     * - https://github.com/OpenAPITools/openapi-generator/pull/4453 (kotlin inheritance)
-     *
-     * TODO: Multiple fixes are planned for 4.3.1 OpenApi Gen. Check if this can be removed after it is released.
-     *
-     * @param model to be fixed
-     * @since 2.1.0
-     */
-    private fun fixAllOfModelInheritance(model: CodegenModel) {
-        if (model.allOf != null && model.allOf.isNotEmpty()) {
-            logger.info("Model: ${model.name} allOf inheritance fixed")
-            model.parent = null
-            model.parentModel = null
-            model.vars = model.allVars.apply {
-                forEach { it.isInherited = false }
-            }
-        }
     }
 
     /**
@@ -762,20 +736,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     }
 
     /**
-     * Adds vendor extension [VENDOR_EXTENSION_BASE_NAME_LITERAL] which contains escaped base name for use as a string
-     * literal.
-     *
-     * @param modelProperties all properties to have this extension set
-     * @since 2.0.0
-     */
-    private fun escapePropertyBaseNameLiteral(modelProperties: List<CodegenProperty>) {
-        modelProperties.forEach { property ->
-            property.vendorExtensions[VENDOR_EXTENSION_BASE_NAME_LITERAL] =
-                property.baseName.replace("$", "\\$")
-        }
-    }
-
-    /**
      * Filters out operation params if their base name is contained in [removeOperationParams] list.
      *
      * @param operation to have params filtered
@@ -784,9 +744,6 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun filterOperationParams(operation: CodegenOperation) {
         if (removeOperationParams.isNotEmpty()) {
             operation.allParams.removeIf { removeOperationParams.contains(it.baseName) }
-            if (operation.allParams.isNotEmpty()) {
-                operation.allParams.last().hasMore = false
-            }
         }
     }
 
@@ -800,30 +757,5 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
     private fun isMultipartType(consumes: List<Map<String, String>>): Boolean {
         val firstType = consumes[0]
         return "multipart/form-data" == firstType["mediaType"]
-    }
-
-    /**
-     * Sorts all parameters of operation to have path parameters first. Retrofit2 requires to have @Path parameter must
-     * not come after some parameters that is why they are always first after sorting.
-     * https://github.com/square/retrofit/blob/master/retrofit/src/main/java/retrofit2/RequestFactory.java#L376
-     *
-     * @param operation to sort all params for
-     * @since 2.0.2
-     */
-    private fun sortAllParams(operation: CodegenOperation) {
-        if (operation.allParams != null) {
-            sort(operation.allParams) { first, second ->
-                when {
-                    first.isPathParam && !second.isPathParam -> -1
-                    !first.isPathParam && second.isPathParam -> 1
-                    else -> 0
-                }
-            }
-            val iterator: Iterator<CodegenParameter> = operation.allParams.iterator()
-            while (iterator.hasNext()) {
-                val param = iterator.next()
-                param.hasMore = iterator.hasNext()
-            }
-        }
     }
 }

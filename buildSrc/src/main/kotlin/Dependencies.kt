@@ -1,18 +1,17 @@
 /* =============================  VERSIONS ======================= */
 
 private object Versions {
-    const val kotlin = "1.3.72"
-    const val dokka = "0.10.0"
-    const val bintrayGradle = "1.8.4"
+    const val kotlin = "1.5.21"
+    const val dokka = "1.5.0"
 
-    const val openApiCodegen = "4.3.0"
+    const val openApiCodegen = "5.2.1"
 
-    const val junit = "4.12"
-    const val kotlinTest = "3.3.0"
+    const val junit = "5.7.2"
+    const val kotest = "4.6.1"
 
-    const val retrofit = "2.6.0"
-    const val moshi = "1.9.2"
-    const val swaggerCodeGen = "2.2.0"
+    const val retrofit = "2.9.0"
+    const val moshi = "1.12.0"
+    const val swaggerCodeGen = "2.3.0"
 }
 
 /* =============================  BUILD-PLUGINS ======================= */
@@ -20,7 +19,6 @@ private object Versions {
 object GradlePlugins {
     const val kotlin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
     const val dokka = "org.jetbrains.dokka:dokka-gradle-plugin:${Versions.dokka}"
-    const val bintrayGradle = "com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.bintrayGradle}"
 }
 
 /* =============================  ARTIFACTS ============================= */
@@ -59,8 +57,8 @@ object Dependencies {
     }
 
     object TestLibs {
-        const val junit = "junit:junit:${Versions.junit}"
-        const val kotlinTest = "io.kotlintest:kotlintest-runner-junit5:${Versions.kotlinTest}"
+        const val junit = "org.junit.jupiter:junit-jupiter-api:${Versions.junit}"
+        const val kotest = "io.kotest:kotest-runner-junit5:${Versions.kotest}"
     }
 
 }

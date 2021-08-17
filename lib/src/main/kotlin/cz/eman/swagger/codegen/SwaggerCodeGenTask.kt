@@ -2,6 +2,7 @@ package cz.eman.swagger.codegen
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.openapitools.codegen.DefaultGenerator
@@ -10,7 +11,7 @@ import org.openapitools.codegen.config.Context
 import java.io.File
 
 /**
- * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
+ * @author eMan a.s. (info@eman.cz)
  * @since 1.0.0
  */
 open class SwaggerCodeGenTask : DefaultTask() {
@@ -21,6 +22,7 @@ open class SwaggerCodeGenTask : DefaultTask() {
     /**
      * Ideally this would be marked as an input to this task however I need to fix some things around how it is implemented.
      */
+    @Internal
     var configuration = CodegenConfigurator()
 
     /**
@@ -62,12 +64,12 @@ open class SwaggerCodeGenTask : DefaultTask() {
             //config.isVerbose = true
 
             DefaultGenerator()
-                    .opts(config.toClientOptInput())
-                    .generate()
+                .opts(config.toClientOptInput())
+                .generate()
 
             // Clean up the system environment variables that have been set by the code generator.
             // https://github.com/swagger-api/swagger-codegen/issues/4788
-            ctx.workflowSettings.systemProperties.keys.forEach { System.clearProperty(it) }
+            ctx.workflowSettings.globalProperties.keys.forEach { System.clearProperty(it) }
         }
     }
 }

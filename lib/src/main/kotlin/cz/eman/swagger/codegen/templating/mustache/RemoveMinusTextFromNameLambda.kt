@@ -15,7 +15,7 @@ import java.io.Writer
  *
  * For instance if _paramName=dogMinusCat_ so result will be _dogCat_
  *
- * @author eMan s.r.o.
+ * @author eMan a.s. (info@eman.cz)
  * @since 2.0.0
  * @see[Mustache.Lambda]
  */
