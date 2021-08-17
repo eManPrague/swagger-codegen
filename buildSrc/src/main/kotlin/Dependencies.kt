@@ -4,7 +4,7 @@ private object Versions {
     const val kotlin = "1.5.21"
     const val dokka = "1.5.0"
 
-    const val openApiCodegen = "5.2.0"
+    const val openApiCodegen = "5.2.1"
 
     const val junit = "5.7.2"
     const val kotest = "4.6.1"
