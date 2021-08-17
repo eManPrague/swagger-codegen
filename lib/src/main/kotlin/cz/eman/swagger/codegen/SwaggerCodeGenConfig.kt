@@ -21,7 +21,7 @@ import org.openapitools.codegen.config.Context
  *   compileJava part does not run but it can be forced using [forceJava].
  * - [forceJava] forces java compilation when compileKotlin is present.
  *
- * @author eMan s.r.o. (info@eman.cz)
+ * @author eMan a.s. (info@eman.cz)
  */
 open class SwaggerCodeGenConfig : CodegenConfigurator(), Cloneable {
 

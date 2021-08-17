@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
  * You can turn off auto hooking by settings [SwaggerCodeGenConfig.autoHook] to false. Java generation is disabled when
  * Kotlin task exists, you can force generating it using [SwaggerCodeGenConfig.forceJava].
  *
- * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
+ * @author eMan a.s. (info@eman.cz)
  * @since 1.0.0
  */
 open class SwaggerCodeGenPlugin : Plugin<Project> {

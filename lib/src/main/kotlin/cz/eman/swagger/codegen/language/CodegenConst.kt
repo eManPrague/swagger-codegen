@@ -1,7 +1,7 @@
 package cz.eman.swagger.codegen.language
 
 /**
- * @author eMan s.r.o. (david.sucharda@eman.cz)
+ * @author eMan a.s. (info@eman.cz)
  * @since 2.0.0
  */
 const val GENERATE_INFRASTRUCTURE_API = "generateInfrastructure"

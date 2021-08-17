@@ -11,7 +11,7 @@ package cz.eman.swagger.codegen
  * @see SwaggerCodeGenConfig
  * @see SwaggerCodeGenPlugin
  * @since 2.0.0
- * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
+ * @author eMan a.s. (info@eman.cz)
  */
 data class SwaggerCodeGenTaskConfig(
     var inputFileName: String? = null,

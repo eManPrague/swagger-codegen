@@ -11,7 +11,7 @@ import org.openapitools.codegen.config.Context
 import java.io.File
 
 /**
- * @author eMan s.r.o. (vaclav.souhrada@eman.cz)
+ * @author eMan a.s. (info@eman.cz)
  * @since 1.0.0
  */
 open class SwaggerCodeGenTask : DefaultTask() {
