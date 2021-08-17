@@ -1,6 +1,6 @@
 # OpenApi 3 Codegen / Swagger
 
-[ ![Download](https://api.bintray.com/packages/emanprague/maven/cz.eman.swagger.codegen/images/download.svg?version=2.2.2) ](https://bintray.com/emanprague/maven/cz.eman.swagger.codegen/2.2.2/link)
+[ ![Download](https://nexus.eman.cz/repository/maven-public/cz/eman/swagger/swagger-codegen/2.3.0/swagger-codegen-2.3.0.jar) ](https://nexus.eman.cz/#browse/browse:maven-public:cz%2Feman%2Fswagger%2Fswagger-codegen)
 
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
@@ -17,7 +17,7 @@ buildscript {
 
     // Kotlin Gradle DSL
     dependencies {
-        classpath("cz.eman.swagger:swagger-codegen:2.2.2")
+        classpath("cz.eman.swagger:swagger-codegen:2.3.0")
     }
 }
 ```
@@ -83,7 +83,6 @@ configure<SwaggerCodeGenConfig> {
     - `dateLibrary` - By this property you can set date library used to serialize dates and times.
     - `enumPropertyNaming` - By this property you can change enum property naming style. ("camelCase", "PascalCase", "snake_case", "original", "UPPERCASE")
     - `generateInfrastructure` - By this property you can enable to generate API infrastructure.
-    - `collectionType` - By this property cou can change collection type.
     - `emptyDataClasses` - By this property you can enable empty data classes being generated. (Note: it should not pass Kotlin compilation.)
     - `generateAliasAsModel` - By this property you can generate alias (array, map) as model.
     - `composedArrayAsAny` - By this property array of composed is changed to array of object (kotlin.Any).
@@ -104,6 +103,6 @@ Other options can be found [here](https://github.com/OpenAPITools/openapi-genera
 If your OpenApi contains some specific objects for parsing JSON, .... You need add the Moshi dependencies
 
 ```kotlin
-implementation("com.squareup.moshi:moshi-kotlin:1.9.2")
-implementation("com.squareup.moshi:moshi-adapters:1.9.2")
+implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
+implementation("com.squareup.moshi:moshi-adapters:1.12.0")
 ```
