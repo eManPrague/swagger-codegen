@@ -16,6 +16,10 @@ dependencies {
     testImplementation(Dependencies.TestLibs.kotest)
 }
 
+gradlePlugin {
+    isAutomatedPublishing = false
+}
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
@@ -47,56 +51,55 @@ gradlePlugin {
     }
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                artifactId = Artifact.artifactId
-                from(components["java"])
-                artifact(sourcesJar)
-                artifact(dokkaHtmlJar)
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = Artifact.groupId
+            artifactId = Artifact.artifactId
+            from(components["java"])
+            artifact(sourcesJar)
+            artifact(dokkaHtmlJar)
 
-                pom {
-                    name.set("Swagger Codegen")
-                    description.set("A fork of the swagger-codegen by eMan")
+            pom {
+                name.set("Swagger Codegen")
+                description.set("A fork of the swagger-codegen by eMan")
+                url.set("https://github.com/eManPrague/swagger-codegen")
+
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+
+                developers {
+                    developer {
+                        name.set("eMan a.s.")
+                        email.set("info@eman.cz")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/eManPrague/swagger-codegen.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/eManPrague/swagger-codegen.git")
                     url.set("https://github.com/eManPrague/swagger-codegen")
+                }
 
-                    licenses {
-                        license {
-                            name.set("MIT License")
-                            url.set("https://opensource.org/licenses/MIT")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            name.set("eMan a.s.")
-                            email.set("info@eman.cz")
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:git:git://github.com/eManPrague/swagger-codegen.git")
-                        developerConnection.set("scm:git:ssh://git@github.com/eManPrague/swagger-codegen.git")
-                        url.set("https://github.com/eManPrague/swagger-codegen")
-                    }
-
-                    issueManagement {
-                        system.set("GitHub Issues")
-                        url.set("https://github.com/eManPrague/swagger-codegen/issues")
-                    }
+                issueManagement {
+                    system.set("GitHub Issues")
+                    url.set("https://github.com/eManPrague/swagger-codegen/issues")
                 }
             }
         }
+    }
 
-        repositories {
-            maven(url = "https://nexus.eman.cz/repository/maven-public") {
-                name = "Nexus"
+    repositories {
+        maven(url = "https://nexus.eman.cz/repository/maven-public") {
+            name = "Nexus"
 
-                credentials {
-                    username = findPropertyOrNull("nexus.username")
-                    password = findPropertyOrNull("nexus.password")
-                }
+            credentials {
+                username = findPropertyOrNull("nexus.username")
+                password = findPropertyOrNull("nexus.password")
             }
         }
     }
