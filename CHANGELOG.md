@@ -1,10 +1,13 @@
 Change Log
 ==========
 
-## 2.3.0 (TBD)
+## 2.3.1 (TBD)
+
+## 2.3.0 (2021-08-17)
 
 ### Updated:
 - All dependencies.
+- OpenApiCodegen to 5.2.1 (https://github.com/OpenAPITools/openapi-generator/releases/tag/v5.2.1)
 - Gradle to 7.1.1.
 
 ### Added:
