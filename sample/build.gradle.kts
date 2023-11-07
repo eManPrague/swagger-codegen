@@ -1,4 +1,5 @@
 import cz.eman.swagger.codegen.SwaggerCodeGenConfig
+import cz.eman.swagger.codegen.SwaggerCodeGenTask
 import cz.eman.swagger.codegen.SwaggerCodeGenTaskConfig
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -90,6 +91,10 @@ sourceSets {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
+}
+
+tasks.withType<SwaggerCodeGenTask> {
+    project.tasks.findByName("kaptGenerateStubsKotlin")?.dependsOn(this)
 }
