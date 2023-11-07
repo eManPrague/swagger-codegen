@@ -1,6 +1,6 @@
 # OpenApi 3 Codegen / Swagger
 
-[![Latest version](https://img.shields.io/github/v/release/eManPrague/swagger-codegen)](https://github.com/eManPrague/swagger-codegen/releases/tag/v2.3.0)
+[![Latest version](https://img.shields.io/github/v/release/eManPrague/swagger-codegen)](https://github.com/eManPrague/swagger-codegen/releases/tag/v2.4.0)
 
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
@@ -27,7 +27,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath("cz.eman.swagger:swagger-codegen:2.3.0")
+        classpath("cz.eman.swagger:swagger-codegen:2.4.0")
     }
 }
 ```
@@ -42,7 +42,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath 'cz.eman.swagger:swagger-codegen:2.3.0'
+        classpath 'cz.eman.swagger:swagger-codegen:2.4.0'
     }
 }
 ```
@@ -128,6 +128,6 @@ Other options can be found [here](https://github.com/OpenAPITools/openapi-genera
 If your OpenApi contains some specific objects for parsing JSON, .... You need add the Moshi dependencies
 
 ```kotlin
-implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
-implementation("com.squareup.moshi:moshi-adapters:1.12.0")
+implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
+implementation("com.squareup.moshi:moshi-adapters:1.15.0")
 ```
