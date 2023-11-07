@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+## 2.4.0 (2023-11-07)
+
+### Updated
+- Kotlin to 1.9.10
+- Moshi to 1.15.0
+- Gradle to 8.4
+
 ## 2.3.0 (2021-08-17)
 
 ### Updated:
