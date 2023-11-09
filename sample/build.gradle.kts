@@ -91,7 +91,7 @@ sourceSets {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
 }
 
