@@ -27,7 +27,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath("cz.eman.swagger:swagger-codegen:2.4.0")
+        classpath("cz.eman.swagger:swagger-codegen:2.3.0")
     }
 }
 ```
@@ -42,7 +42,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath 'cz.eman.swagger:swagger-codegen:2.4.0'
+        classpath 'cz.eman.swagger:swagger-codegen:2.3.0'
     }
 }
 ```
@@ -128,6 +128,6 @@ Other options can be found [here](https://github.com/OpenAPITools/openapi-genera
 If your OpenApi contains some specific objects for parsing JSON, .... You need add the Moshi dependencies
 
 ```kotlin
-implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
-implementation("com.squareup.moshi:moshi-adapters:1.15.0")
+implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
+implementation("com.squareup.moshi:moshi-adapters:1.12.0")
 ```
