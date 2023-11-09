@@ -1,8 +1,8 @@
 /* =============================  VERSIONS ======================= */
 
 private object Versions {
-    const val kotlin = "1.5.21"
-    const val dokka = "1.5.0"
+    const val kotlin = "1.9.10"
+    const val dokka = "1.9.10"
 
     const val openApiCodegen = "5.2.1"
 
@@ -10,7 +10,7 @@ private object Versions {
     const val kotest = "4.6.1"
 
     const val retrofit = "2.9.0"
-    const val moshi = "1.12.0"
+    const val moshi = "1.15.0"
     const val swaggerCodeGen = "2.3.0"
 }
 
