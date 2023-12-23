@@ -88,9 +88,15 @@ sourceSets {
     getByName("test").java.srcDirs("src/test/kotlin")
 }
 
+val javaVersion = JavaVersion.VERSION_1_8
+java {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = javaVersion.toString()
     }
 }
 
