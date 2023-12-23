@@ -33,48 +33,47 @@ configure<SwaggerCodeGenConfig> {
     setGeneratorName("cz.eman.swagger.codegen.generator.kotlin.KotlinClientCodegen")
 
     setAdditionalProperties(
-            mutableMapOf(
-                    "templateEngine" to "mustache",
-                    "dateLibrary" to "string",
-                    "enumPropertyNaming" to "original",
-                    "modelNameSuffix" to "Dto",
-                    "apiNameSuffix" to "",
-                    "generateInfrastructure" to false,
-                    "removeMinusTextInHeaderProperty" to true,
-                    "ignoreEndpointStartingSlash" to true,
-                    "serializationLibrary" to "moshi",
-                    "moshiCodeGen" to true,
-                    "removeOperationParams" to arrayOf(
-                            "Accept-Language",
-                            "ETag",
-                            "X-Access-Token",
-                            "X-Call-Chain-Id",
-                            "X-Execution-TimeStamp",
-                            "X-Release-Version"
-                    )
+        mutableMapOf(
+            "templateEngine" to "mustache",
+            "dateLibrary" to "string",
+            "enumPropertyNaming" to "original",
+            "modelNameSuffix" to "Dto",
+            "apiNameSuffix" to "",
+            "generateInfrastructure" to false,
+            "removeMinusTextInHeaderProperty" to true,
+            "ignoreEndpointStartingSlash" to true,
+            "serializationLibrary" to "moshi",
+            "moshiCodeGen" to true,
+            "removeOperationParams" to arrayOf(
+                "Accept-Language",
+                "ETag",
+                "X-Access-Token",
+                "X-Call-Chain-Id",
+                "X-Execution-TimeStamp",
+                "X-Release-Version"
             )
+        )
     )
 
-    configs =
-            listOf(
-                    SwaggerCodeGenTaskConfig(
-                            inputFileName = "petstore.yaml",
-                            outputFolderName = "petstore",
-                            additionalProperties = mapOf(
-                                    "apiPackage" to "cz.eman.swagger.api.petstore",
-                                    "modelPackage" to "cz.eman.swagger.api.petstore.model",
-                                    "dateLibrary" to "java8"
-                            )
-                    ),
-                    SwaggerCodeGenTaskConfig(
-                            inputFileName = "petstore-opt-def-arg-api.yaml",
-                            outputFolderName = "petstore-def-and-opt-query",
-                            additionalProperties = mapOf(
-                                    "apiPackage" to "cz.eman.swagger.api.petstore.defoptapi",
-                                    "modelPackage" to "cz.eman.swagger.api.petstore.defoptapi.model"
-                            )
-                    )
+    configs = listOf(
+        SwaggerCodeGenTaskConfig(
+            inputFileName = "petstore.yaml",
+            outputFolderName = "petstore",
+            additionalProperties = mapOf(
+                "apiPackage" to "cz.eman.swagger.api.petstore",
+                "modelPackage" to "cz.eman.swagger.api.petstore.model",
+                "dateLibrary" to "java8"
             )
+        ),
+        SwaggerCodeGenTaskConfig(
+            inputFileName = "petstore-opt-def-arg-api.yaml",
+            outputFolderName = "petstore-def-and-opt-query",
+            additionalProperties = mapOf(
+                "apiPackage" to "cz.eman.swagger.api.petstore.defoptapi",
+                "modelPackage" to "cz.eman.swagger.api.petstore.defoptapi.model"
+            )
+        )
+    )
 }
 
 val generatedPetStoreSrcDir = File(buildDir, "openapi/petstore/src/main/kotlin")
@@ -82,9 +81,9 @@ val generatedPetStoreDefOptApiQuerySrcDir = File(buildDir, "openapi/petstore-def
 
 sourceSets {
     getByName("main").java.srcDirs(
-            "src/main/kotlin",
-            generatedPetStoreSrcDir,
-            generatedPetStoreDefOptApiQuerySrcDir
+        "src/main/kotlin",
+        generatedPetStoreSrcDir,
+        generatedPetStoreDefOptApiQuerySrcDir
     )
     getByName("test").java.srcDirs("src/test/kotlin")
 }
