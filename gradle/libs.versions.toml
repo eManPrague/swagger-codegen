@@ -3,35 +3,19 @@ gradle = "8.4"
 
 kotlin = "1.9.10"
 dokka = "1.9.10"
-swaggerCodegen = "2.3.0"
 
 openapi = "5.2.1"
-moshi = "1.15.0"
-retrofit = "2.9.0"
 jUnit = "5.7.2"
 kotest = "4.6.1"
 
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 
 
 [libraries]
 openapiGenerator = { group = "org.openapitools", name = "openapi-generator", version.ref = "openapi" }
-moshi-core = { group = "com.squareup.moshi", name = "moshi", version.ref = "moshi" }
-moshi-adapters = { group = "com.squareup.moshi", name = "moshi-adapters", version.ref = "moshi" }
-moshi-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshi" }
-
-retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
-retrofit-converter-scalars = { group = "com.squareup.retrofit2", name = "converter-scalars", version.ref = "retrofit" }
-retrofit-converter-moshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofit" }
 
 jUnit = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jUnit" }
 kotest = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
-
-
-[bundles]
-moshi = ["moshi-core", "moshi-adapters"]
-retrofit = ["retrofit-core", "retrofit-converter-scalars", "retrofit-converter-moshi"]
