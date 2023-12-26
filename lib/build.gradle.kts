@@ -41,11 +41,11 @@ val dokkaHtmlJar by tasks.creating(Jar::class) {
     dependsOn(dokka)
 }
 
+val identifier = "swagger-codegen"
 gradlePlugin {
     plugins {
         register("swagger-codegen-plugin") {
-            group = Artifact.groupId
-            id = Artifact.artifactId
+            id = identifier
             implementationClass = "cz.eman.swagger.codegen.SwaggerCodeGenPlugin"
         }
     }
@@ -55,8 +55,7 @@ gradlePlugin {
 publishing {
     publications {
         create<MavenPublication>("release") {
-            groupId = Artifact.groupId
-            artifactId = Artifact.artifactId
+            artifactId = identifier
             from(components["java"])
             artifact(sourcesJar)
             artifact(dokkaHtmlJar)
@@ -99,8 +98,8 @@ publishing {
             name = "Nexus"
 
             credentials {
-                username = findPropertyOrNull("nexus.username")
-                password = findPropertyOrNull("nexus.password")
+                username = findProperty("nexus.username") as String?
+                password = findProperty("nexus.password") as String?
             }
         }
     }

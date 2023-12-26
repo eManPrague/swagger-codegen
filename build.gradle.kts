@@ -20,7 +20,7 @@ allprojects {
         maven("https://nexus.eman.cz/repository/maven-public")
     }
 
-    group = Artifact.groupId
+    group = "cz.eman.swagger"
 }
 
 tasks.create<Delete>("clean") {
