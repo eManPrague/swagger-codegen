@@ -2,18 +2,16 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java-gradle-plugin")
-    kotlin("jvm")
-    id("org.jetbrains.dokka")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.dokka)
     id("maven-publish")
 }
 
 dependencies {
-    implementation(gradleApi())
-    implementation(Dependencies.Kotlin.kotlinStbLib)
-    implementation(Dependencies.Libs.openApiCodegen)
+    implementation(libs.openapiGenerator)
 
-    testImplementation(Dependencies.TestLibs.junit)
-    testImplementation(Dependencies.TestLibs.kotest)
+    testImplementation(libs.jUnit)
+    testImplementation(libs.kotest)
 }
 
 tasks.withType<KotlinCompile> {
@@ -43,11 +41,11 @@ val dokkaHtmlJar by tasks.creating(Jar::class) {
     dependsOn(dokka)
 }
 
+val identifier = "swagger-codegen"
 gradlePlugin {
     plugins {
         register("swagger-codegen-plugin") {
-            group = Artifact.groupId
-            id = Artifact.artifactId
+            id = identifier
             implementationClass = "cz.eman.swagger.codegen.SwaggerCodeGenPlugin"
         }
     }
@@ -57,8 +55,7 @@ gradlePlugin {
 publishing {
     publications {
         create<MavenPublication>("release") {
-            groupId = Artifact.groupId
-            artifactId = Artifact.artifactId
+            artifactId = identifier
             from(components["java"])
             artifact(sourcesJar)
             artifact(dokkaHtmlJar)
@@ -101,8 +98,8 @@ publishing {
             name = "Nexus"
 
             credentials {
-                username = findPropertyOrNull("nexus.username")
-                password = findPropertyOrNull("nexus.password")
+                username = findProperty("nexus.username") as String?
+                password = findProperty("nexus.password") as String?
             }
         }
     }

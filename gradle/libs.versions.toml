@@ -1,0 +1,21 @@
+[versions]
+gradle = "8.4"
+
+kotlin = "1.9.10"
+dokka = "1.9.10"
+
+openapi = "5.2.1"
+jUnit = "5.7.2"
+kotest = "4.6.1"
+
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+
+
+[libraries]
+openapiGenerator = { group = "org.openapitools", name = "openapi-generator", version.ref = "openapi" }
+
+jUnit = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jUnit" }
+kotest = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }

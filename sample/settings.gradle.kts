@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -7,6 +5,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Swagger codegen"
+rootProject.name = "sample"
 
-include(":plugin")
+include(":kotlin-client")
+includeBuild("..")
