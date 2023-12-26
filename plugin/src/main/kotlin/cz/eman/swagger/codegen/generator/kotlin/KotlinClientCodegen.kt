@@ -92,16 +92,16 @@ open class KotlinClientCodegen : org.openapitools.codegen.languages.KotlinClient
         const val TYPE_ARRAY_LIST = "ArrayList"
     }
 
-    enum class GenerateApiType constructor(val value: String) {
+    enum class GenerateApiType(val value: String) {
         INFRASTRUCTURE("infrastructure"),
         API("api")
     }
 
-    enum class HeadersCommands constructor(val value: String) {
+    enum class HeadersCommands(val value: String) {
         REMOVE_MINUS_WORD_FROM_PROPERTY(REMOVE_MINUS_TEXT_FROM_HEADER)
     }
 
-    enum class EndpointsCommands constructor(val value: String) {
+    enum class EndpointsCommands(val value: String) {
         INGORE_ENDPOINT_STARTING_SLASH(REMOVE_ENDPOINT_STARTING_SLASH)
     }
 
