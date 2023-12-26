@@ -5,10 +5,13 @@ buildscript {
     }
 
     dependencies {
-        classpath(GradlePlugins.kotlin)
-        classpath(GradlePlugins.dokka)
-        classpath(Dependencies.GradlePlugins.swaggerCodeGen)
+        classpath("cz.eman.swagger:swagger-codegen:${libs.versions.swaggerCodegen.get()}")
     }
+}
+
+plugins {
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.kapt) apply false
 }
 
 allprojects {

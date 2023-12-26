@@ -5,22 +5,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java-library")
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
     id("swagger-codegen")
-    id("kotlin-kapt")
+    alias(libs.plugins.kotlin.kapt)
 }
 
 dependencies {
-    // Kotlin
-    implementation(Dependencies.Kotlin.kotlinStbLib)
-    implementation(Dependencies.Retrofit.retrofit)
-    implementation(Dependencies.Tools.moshiKotlin) {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    implementation(Dependencies.Tools.moshiAdapters) {
-        exclude(group = "org.jetbrains.kotlin")
-    }
-    kapt(Dependencies.Tools.moshiCodegen)
+    implementation(libs.bundles.retrofit)
+    implementation(libs.bundles.moshi)
+    kapt(libs.moshi.codegen)
 }
 
 /**

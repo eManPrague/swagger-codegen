@@ -2,18 +2,16 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java-gradle-plugin")
-    kotlin("jvm")
-    id("org.jetbrains.dokka")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.dokka)
     id("maven-publish")
 }
 
 dependencies {
-    implementation(gradleApi())
-    implementation(Dependencies.Kotlin.kotlinStbLib)
-    implementation(Dependencies.Libs.openApiCodegen)
+    implementation(libs.openapiGenerator)
 
-    testImplementation(Dependencies.TestLibs.junit)
-    testImplementation(Dependencies.TestLibs.kotest)
+    testImplementation(libs.jUnit)
+    testImplementation(libs.kotest)
 }
 
 tasks.withType<KotlinCompile> {
