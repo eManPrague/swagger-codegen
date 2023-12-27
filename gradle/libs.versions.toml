@@ -16,6 +16,7 @@ dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 
 [libraries]
 openapiGenerator = { group = "org.openapitools", name = "openapi-generator", version.ref = "openapi" }
+kotlinPluginApi = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin-api", version.ref = "kotlin" }
 
 jUnit = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "jUnit" }
 kotest = { group = "io.kotest", name = "kotest-runner-junit5", version.ref = "kotest" }
