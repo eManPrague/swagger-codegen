@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     implementation(libs.openapiGenerator)
+    implementation(libs.kotlinPluginApi)
 
     testImplementation(libs.jUnit)
     testImplementation(libs.kotest)
