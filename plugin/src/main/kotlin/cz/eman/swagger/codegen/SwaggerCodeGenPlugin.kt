@@ -32,7 +32,6 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
         val configsExt = project.extensions.create(SWAGGER_TASK, SwaggerCodeGenConfig::class.java)
         autoHookJava(project, configsExt)
         autoHookKotlin(project, configsExt)
-        autoHookKotlin(project, configsExt, true)
     }
 
     /**
@@ -69,41 +68,31 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
     }
 
     /**
-     * Auto-hooks openApi generation to project that contain compile task [COMPILE_KOTLIN] or [COMPILE_KOTLIN_JVM].
-     * Finds the task and crates java generator task for it with dependency.
+     * Auto-hooks openApi generation to project that contain Kotlin compile task.
+     * Finds the task and creates java generator task for it with dependency.
      *
      * @param project used to search for compile tasks
      * @param configsExt swagger gen config
      */
-    private fun autoHookKotlin(
-        project: Project,
-        configsExt: SwaggerCodeGenConfig,
-        isMpp: Boolean = false
-    ) {
-        var hooked = false
+    private fun autoHookKotlin(project: Project, configsExt: SwaggerCodeGenConfig) {
         project.afterEvaluate {
             if (configsExt.autoHook) {
-                val compileTaskName = if (isMpp) {
-                    COMPILE_KOTLIN_JVM
-                } else {
-                    COMPILE_KOTLIN
+                val generators = configsExt.configs.mapNotNull { taskConfig ->
+                    createGenerator(
+                        project,
+                        LANGUAGE_KOTLIN,
+                        configsExt,
+                        taskConfig
+                    )
                 }
-                project.getTasksByName(compileTaskName, false).firstOrNull()?.let { compileKotlin ->
-                    configsExt.configs.forEach { taskConfig ->
-                        createGenerator(
-                            project,
-                            LANGUAGE_KOTLIN,
-                            configsExt,
-                            taskConfig
-                        )?.let { task ->
-                            compileKotlin.dependsOn(task)
-                        }
-                    }
-                    hooked = true
+
+                val compileTasks = project.kotlinCompileTasks()
+                logger.info("Kotlin auto-hooked: ${compileTasks.isNotEmpty()}")
+                compileTasks.all { task ->
+                    task.dependsOn(generators)
                 }
             }
         }
-        logger.info("Kotlin (isMpp: $isMpp) auto-hooked: $hooked")
     }
 
     /**
