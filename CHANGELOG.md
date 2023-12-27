@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+## 2.3.2 (2023-12-27)
+
+### Fixed:
+- Task dependency resolution
+
 ## 2.3.1 (2023-11-09)
 
 ### Updated:

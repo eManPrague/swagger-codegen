@@ -1,6 +1,6 @@
 # OpenApi 3 Codegen / Swagger
 
-[![Latest version](https://img.shields.io/github/v/release/eManPrague/swagger-codegen)](https://github.com/eManPrague/swagger-codegen/releases/tag/v2.3.1)
+[![Latest version](https://img.shields.io/github/v/release/eManPrague/swagger-codegen)](https://github.com/eManPrague/swagger-codegen/releases/tag/v2.3.2)
 
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
@@ -27,7 +27,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath("cz.eman.swagger:swagger-codegen:2.3.1")
+        classpath("cz.eman.swagger:swagger-codegen:2.3.2")
     }
 }
 ```
@@ -42,7 +42,7 @@ buildscript {
 
     dependencies {
         ...
-        classpath 'cz.eman.swagger:swagger-codegen:2.3.1'
+        classpath 'cz.eman.swagger:swagger-codegen:2.3.2'
     }
 }
 ```
