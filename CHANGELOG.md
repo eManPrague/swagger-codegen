@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+## 2.3.3 (2025-01-13)
+
+- Add Gradle configuration cache support
+
 ## 2.3.2 (2023-12-27)
 
 ### Fixed:
@@ -83,13 +87,13 @@ Change Log
 ## 2.0.1 (2020-03-10)
 
 ### Fixed
-- Fix of an error `Could not generate api file List is empty` caused if endpoint has no parameters after removing all from 
+- Fix of an error `Could not generate api file List is empty` caused if endpoint has no parameters after removing all from
 parameter `removeOperationParams` (occurred if this parameter is present).
 
 ## 2.0.0 (2020-03-09)
-- Introduced a new config parameter `ignoreEndpointStartingSlash` to ignore endpoint's starting slash in generated 
+- Introduced a new config parameter `ignoreEndpointStartingSlash` to ignore endpoint's starting slash in generated
 Retrofit API service class. See `IgnoreStartingSlashLambda` for more details.
-- Introduced a new lambda `IgnoreStartingSlashLambda` (`{{#lambda.ignoreStartingSlash}}{{paramName}}{{/lambda.ignoreStartingSlash}}`) 
+- Introduced a new lambda `IgnoreStartingSlashLambda` (`{{#lambda.ignoreStartingSlash}}{{paramName}}{{/lambda.ignoreStartingSlash}}`)
 which removes word *minus* in a fragment if it's in it.
 - For rest of changes see all `2.0.0-xx` changelog messages.
 
