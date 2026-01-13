@@ -1,6 +1,6 @@
 # OpenApi 3 Codegen / Swagger
 
-[![Latest version](https://img.shields.io/github/v/release/eManPrague/swagger-codegen)](https://github.com/eManPrague/swagger-codegen/releases/tag/v2.3.2)
+[![Latest version](https://img.shields.io/github/v/release/eManPrague/swagger-codegen)](https://github.com/eManPrague/swagger-codegen/releases/latest)
 
 The Swagger codegen contains a template-driven engine to generate documentation, code for Java, Kotlin and Android such like Retrofit and Room. It is a fork of the https://github.com/OpenAPITools/openapi-generator with modifications
 
@@ -131,3 +131,14 @@ If your OpenApi contains some specific objects for parsing JSON, .... You need a
 implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
 implementation("com.squareup.moshi:moshi-adapters:1.15.0")
 ```
+
+### Release Process
+
+1. Update version in `gradle.properties`
+2. Add release information to `CHANGELOG.md`
+3. Commit the changes with message `🔖 Release version x.y.z`
+4. In GitHub, create a new release based on the commit
+5. Publish to eMan Nexus (credentials from Keeper):
+   ```bash
+   ./gradlew publish -Pnexus.username=USERNAME -Pnexus.password=PASSWORD
+   ```
