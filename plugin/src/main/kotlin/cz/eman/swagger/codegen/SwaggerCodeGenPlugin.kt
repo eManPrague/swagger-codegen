@@ -113,12 +113,48 @@ open class SwaggerCodeGenPlugin : Plugin<Project> {
         val taskName = buildTaskName(language, taskConfig.outputFolderName)
 
         return if (project.tasks.findByName(taskName) == null) {
-            project.tasks.register(taskName, SwaggerCodeGenTask::class.java) {
-                it.configuration = config.fromTask(taskConfig)
+            project.tasks.register(taskName, SwaggerCodeGenTask::class.java) { task ->
+                // Configure input specification
+                val inputSpecPath = buildPath(config.sourcePath, taskConfig.inputFileName)
+                task.inputSpec.set(project.file(inputSpecPath))
+
+                // Configure output directory
+                val outputDirPath = buildPath(config.outputPath, taskConfig.outputFolderName)
+                task.outputDir.set(project.layout.projectDirectory.dir(outputDirPath))
+
+                // Set project directories for validation (avoids accessing project at execution time)
+                task.projectDir.set(project.layout.projectDirectory)
+                task.rootProjectDir.set(project.rootProject.layout.projectDirectory)
+
+                // Configure generator name
+                val generatorName = config.getGeneratorName() ?: "kotlin"
+                task.generatorName.set(generatorName)
+
+                // Configure library
+                val libraryValue = taskConfig.library ?: config.getLibrary()
+                if (libraryValue != null) {
+                    task.library.set(libraryValue)
+                }
+
+                // Merge additional properties
+                task.additionalProperties.putAll(config.getAdditionalPropertiesMap())
+                taskConfig.additionalProperties?.let { task.additionalProperties.putAll(it) }
             }.get()
         } else {
             null
         }
+    }
+
+    /**
+     * Builds path based on parameters. Path format is "[configPath]/[taskConfigPath]".
+     *
+     * @param configPath general config path
+     * @param taskConfigPath task config path (optional)
+     * @return [String] with path
+     */
+    private fun buildPath(configPath: String, taskConfigPath: String?) = buildString {
+        append(configPath)
+        taskConfigPath?.let { append("/$it") }
     }
 
     /**
